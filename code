@@ -1,0 +1,1383 @@
+import pandas as pd
+import re
+import warnings
+import numpy as np
+import openpyxl
+from openpyxl.styles import PatternFill
+from openpyxl import load_workbook
+
+
+warnings.filterwarnings("ignore", category=FutureWarning, module="pandas")
+warnings.filterwarnings(action='ignore', category=Warning)
+
+
+# Feature 1: Import data from source file
+data = pd.read_excel(r'C:\Users\oviede\OneDrive - Autodesk\Documents\Python for Exits\MASTERDATA.xlsx', 
+                     dtype={'userName': str})
+
+# Feature: Data Cleanup - Remove rows where useCount is 0
+data = data[data['useCount'] != 0]
+
+data['productName'] = data['productName'].replace('AutoCAD with Advance Steel', 'Advance Steel')
+data['productName'] = data['productName'].replace('BIM 360 Glue', 'BIM Collaborate')
+data['productName'] = data['productName'].replace('BIM 360 Coordinate', 'BIM Collaborate')
+data['productName'] = data['productName'].replace('BIM Coordinate', 'BIM Collaborate')
+data['productName'] = data['productName'].replace('Model Coordination', 'BIM Collaborate')
+data['productName'] = data['productName'].replace('Design Collaboration', 'BIM Collaborate')
+data['productName'] = data['productName'].replace('Revit Cloud Worksharing', 'BIM Collaborate Pro')
+data['productName'] = data['productName'].replace('Collaboration for Civil 3D', 'BIM Collaborate Pro')
+data['productName'] = data['productName'].replace('Collaboration for Plant 3D', 'BIM Collaborate Pro')
+data['productName'] = data['productName'].replace('Collaboration for AutoCAD Plant 3D', 'BIM Collaborate Pro')
+data['productName'] = data['productName'].replace('BIM 360 Collaborate', 'BIM Collaborate')
+data['productName'] = data['productName'].replace('BIM 360 Collaborate Pro', 'BIM Collaborate Pro')
+data['productName'] = data['productName'].replace('Autodesk BIM Collaborate', 'BIM Collaborate')
+data['productName'] = data['productName'].replace('Autodesk Docs', 'BIM 360 Docs')
+data['productName'] = data['productName'].replace('Autodesk Build', 'BIM 360 Build - Packs')
+data['productName'] = data['productName'].replace('Autodesk BIM Collaborate Pro', 'BIM Collaborate Pro')
+data['productName'] = data['productName'].replace('Autodesk BIM Collaborate - Daily', 'BIM Collaborate')
+data['productName'] = data['productName'].replace('Autodesk BIM Collaborate Pro - Daily', 'BIM Collaborate')
+data['productName'] = data['productName'].replace('Autodesk Docs - Daily', 'BIM 360 Docs')
+data['productName'] = data['productName'].replace('Autodesk Build - Daily', 'BIM 360 Build - Packs')
+data['productName'] = data['productName'].replace('Autodesk Forma', 'Forma')
+data['productName'] = data['productName'].replace('3DS Max Design', '3ds Max')
+
+# Remove "@" symbol from "userName"
+data['userName'] = data['userName'].str.replace("@","")
+
+
+# Remove unwanted substrings from "productName"
+data['productName'] = data['productName'].str.replace("Token Flex","")
+data['productName'] = data['productName'].str.replace("- Token Flex","")
+data['productName'] = data['productName'].str.replace(" - license holder","")
+data['productName'] = data['productName'].str.replace("license holder","")
+data['productName'] = data['productName'].str.replace("- Flex Access", "")
+data['productName'] = data['productName'].str.replace("- Daily", "")
+data['productName'] = data['productName'].str.rstrip(" -")
+
+
+data['productName'] = data['productName'].replace("Eagle", "Fusion 360")
+data['productName'] = data['productName'].replace("PowerShape", "Fusion 360 with PowerShape")
+data['productName'] = data['productName'].replace("PowerMill Standard", "Fusion 360 with PowerMill Standard")
+data['productName'] = data['productName'].replace("PowerMill - Standard", "Fusion 360 with PowerMill Standard")
+data['productName'] = data['productName'].replace("PowerMill Ultimate", "Fusion 360 with PowerMill Ultimate")
+data['productName'] = data['productName'].replace("Netfabb Premium", "Fusion 360 with Netfabb Premium")
+data['productName'] = data['productName'].replace("Netfabb", "Fusion 360 with Netfabb Standard")
+data['productName'] = data['productName'].replace("Netfabb Ultimate", "Fusion 360 with Netfabb Ultimate")
+data['productName'] = data['productName'].replace("Netfabb - Ultimate", "Fusion 360 with Netfabb Ultimate")
+data['productName'] = data['productName'].replace("PowerInspect", "Fusion 360 with PowerInspect")
+data['productName'] = data['productName'].replace("PowerInspect - Ultimate", "Fusion 360 with PowerInspect")
+data['productName'] = data['productName'].replace("PowerMill - Ultimate", "Fusion 360 with PowerMill Ultimate")
+data['productName'] = data['productName'].replace("CAMplete TruePath", "Fusion 360 with CAMplete TruePath")
+data['productName'] = data['productName'].replace("CAMplete TurnMill", "Fusion 360 with CAMplete TurnMill")
+data['productName'] = data['productName'].replace("Moldflow Adviser", "Fusion 360 with Moldflow Adviser")
+data['productName'] = data['productName'].replace("Moldflow Adviser - Ultimate", "Fusion 360 with Moldflow Adviser")
+data['productName'] = data['productName'].replace("Moldflow Adviser - Standard", "Fusion 360 with Moldflow Adviser")
+data['productName'] = data['productName'].replace("Moldflow Adviser - Premium", "Fusion 360 with Moldflow Adviser")
+data['productName'] = data['productName'].replace("Moldflow Adviser Ultimate", "Fusion 360 with Moldflow Adviser")
+data['productName'] = data['productName'].replace("Moldflow Adviser Standard", "Fusion 360 with Moldflow Adviser")
+data['productName'] = data['productName'].replace("Moldflow Adviser Premium", "Fusion 360 with Moldflow Adviser")
+data['productName'] = data['productName'].replace("Moldflow Insight - Ultimate", "Moldflow Insight")
+data['productName'] = data['productName'].replace("Moldflow Insight - Standard", "Moldflow Insight")
+data['productName'] = data['productName'].replace("Moldflow Insight - Premium", "Moldflow Insight")
+data['productName'] = data['productName'].replace("Moldflow Insight Ultimate", "Moldflow Insight")
+data['productName'] = data['productName'].replace("Moldflow Insight Standard", "Moldflow Insight")
+data['productName'] = data['productName'].replace("Moldflow Insight Premium", "Moldflow Insight")
+data['productName'] = data['productName'].replace("Moldflow Synergy - Premium", "Moldflow Insight")
+data['productName'] = data['productName'].replace("Moldflow Synergy - Ultimate", "Moldflow Insight")
+data['productName'] = data['productName'].replace("Moldflow Synergy - Standard", "Moldflow Insight")
+data['productName'] = data['productName'].replace("Moldflow Synergy Premium", "Moldflow Insight")
+data['productName'] = data['productName'].replace("Moldflow Synergy Ultimate", "Moldflow Insight")
+data['productName'] = data['productName'].replace("Moldflow Synergy Standard", "Moldflow Insight")
+data['productName'] = data['productName'].replace("Moldflow Synergy", "Moldflow Insight")
+data['productName'] = data['productName'].replace("Helius PFA", "Moldflow Insight")
+data['productName'] = data['productName'].replace("FeatureCAM - Premium", "Fusion 360 - with FeatureCAM")
+data['productName'] = data['productName'].replace("FeatureCAM - Standard", "Fusion 360 - with FeatureCAM")
+data['productName'] = data['productName'].replace("FeatureCAM - Ultimate", "Fusion 360 - with FeatureCAM")
+data['productName'] = data['productName'].replace("Revit - Generative Design", "Revit")
+data['productName'] = data['productName'].replace('BIM 360 Build', 'BIM 360 Build - Packs')
+data['productName'] = data['productName'].replace('Autodesk BIM Collaborate Pro', 'BIM Collaborate Pro')
+data['productName'] = data['productName'].replace('Autodesk Docs', 'BIM 360 Docs')
+data['productName'] = data['productName'].replace('Alias Design', 'Alias Concept')
+data['productName'] = data['productName'].replace('Fusion 360', 'Fusion')
+data['productName'] = data['productName'].replace('Fusion - Ultimate', 'Fusion')
+data['productName'] = data['productName'].replace('Fusion 360 - Early adopter - Legacy', 'Fusion - Early adopter - Legacy')
+data['productName'] = data['productName'].replace('Fusion 360 - Legacy', 'Fusion - Legacy')
+data['productName'] = data['productName'].replace('Fusion 360 - with FeatureCAM', 'Fusion - with FeatureCAM')
+data['productName'] = data['productName'].replace('Fusion 360 - with FeatureCAM Standard', 'Fusion - with FeatureCAM Standard')
+data['productName'] = data['productName'].replace('Fusion 360 Manage - for third-party users', 'Fusion 360 Manage - for third-party users')
+data['productName'] = data['productName'].replace('Fusion 360 - Product Design Extension', 'Fusion Design Extension')
+data['productName'] = data['productName'].replace('Fusion 360 - Generative Design Extension', 'Fusion for Design')
+data['productName'] = data['productName'].replace('Fusion 360 for Manufacturing', 'Fusion for Manufacturing')
+data['productName'] = data['productName'].replace('Fusion 360 - Manage Extension', 'Fusion Manage')
+data['productName'] = data['productName'].replace('Fusion 360 Manage with Upchain - Enterprise', 'Fusion Manage Enterprise')
+data['productName'] = data['productName'].replace('Fusion 360 - Manage Extension', 'Fusion Manage Extension')
+data['productName'] = data['productName'].replace('Fusion 360 Manage with Upchain - Participant', 'Fusion Manage Participant')
+data['productName'] = data['productName'].replace('Fusion 360 Manage with Upchain - Sandbox', 'Fusion Manage Sandbox')
+data['productName'] = data['productName'].replace('Fusion 360 - Nesting & Fabrication Extension', 'Fusion Manufacturing Extension')
+data['productName'] = data['productName'].replace('Fusion 360 - Additive Build Extension', 'Fusion Manufacturing Extension')
+data['productName'] = data['productName'].replace('Fusion 360 - Signal Integrity Extension', 'Fusion Signal Integrity Extension')
+data['productName'] = data['productName'].replace('Fusion 360 - Simulation Extension', 'Fusion Simulation Extension')
+data['productName'] = data['productName'].replace('Fusion 360 - Generative Design Extension', 'Fusion Simulation Extension')
+data['productName'] = data['productName'].replace('Fusion 360 Team - Participant', 'Fusion Team')
+data['productName'] = data['productName'].replace('CAMplete TruePath', 'Fusion with CAMplete TruePath')
+data['productName'] = data['productName'].replace('CAMplete TruePath - legacy user', 'Fusion with CAMplete TruePath - legacy user')
+data['productName'] = data['productName'].replace('CAMplete TurnMill', 'Fusion with CAMplete TurnMill')
+data['productName'] = data['productName'].replace('CAMplete TurnMill - legacy user', 'Fusion with CAMplete TurnMill - legacy user')
+data['productName'] = data['productName'].replace('Fusion 360 with EAGLE Premium', 'Fusion with EAGLE Premium')
+data['productName'] = data['productName'].replace('Fusion 360 with EAGLE Standard', 'Fusion with EAGLE Standard')
+data['productName'] = data['productName'].replace('Fusion 360 with Moldflow Adviser', 'Fusion with Moldflow Adviser')
+data['productName'] = data['productName'].replace('Fusion 360 with Moldflow Adviser - Legacy', 'Fusion with Moldflow Adviser - Legacy')
+data['productName'] = data['productName'].replace('Fusion 360 with Netfabb Premium', 'Fusion with Netfabb Premium')
+data['productName'] = data['productName'].replace('Fusion 360 with Netfabb Standard', 'Fusion with Netfabb Standard')
+data['productName'] = data['productName'].replace('Fusion 360 with Netfabb Ultimate', 'Fusion with Netfabb Ultimate')
+data['productName'] = data['productName'].replace('Fusion 360 with PowerInspect', 'Fusion with PowerInspect')
+data['productName'] = data['productName'].replace('Fusion 360 with PowerMill Standard', 'Fusion with PowerMill Standard')
+data['productName'] = data['productName'].replace('Fusion 360 with PowerMill Ultimate', 'Fusion with PowerMill Ultimate')
+data['productName'] = data['productName'].replace('Fusion 360 with PowerShape', 'Fusion with PowerShape')
+
+
+
+# Feature 3: Create new table with cleaned up data
+user_summary_original = pd.crosstab(index=data['userName'], columns=data['productName'], values=data['useCount'], aggfunc='sum', dropna=False)
+user_summary_original = user_summary_original.stack().reset_index().rename(columns={'level_0':'userName', 'level_1':'productName', 0:'useCount'})
+
+
+
+# save the original product names in a column
+user_summary_original['original_productName'] = user_summary_original['productName']
+user_summary_original["Product Count"] = user_summary_original.groupby("userName")["productName"].transform(lambda x: x.nunique())
+user_summary_original["Max Tokens"] = user_summary_original.apply(lambda x: data[(data["userName"] == x["userName"]) & (data["productName"] == x["productName"])].groupby(data["usageDate"].dt.to_period("M")).sum(numeric_only=True)["useCount"].max(), axis=1)
+user_summary_original["Unique Product Count"] = user_summary_original.groupby("userName")["productName"].transform("nunique")
+user_summary_original = user_summary_original.sort_values(by=["userName"])
+user_summary_original["Days of Use"] = user_summary_original.apply(lambda x: data[(data["userName"] == x["userName"]) & (data["productName"] == x["productName"])].groupby(data["usageDate"].dt.to_period("D")).count().count()["userName"], axis=1)
+
+
+# read the SamplePriceList.xslx file
+sample_price_list = pd.read_excel(r'C:\Users\oviede\OneDrive - Autodesk\Documents\Python for Exits\PricelistMay24.xlsx')
+
+# create a dictionary from the sample_price_list for product name and SRP
+prices = sample_price_list.set_index('productName')['SRP'].to_dict()
+
+# create the SRP column in the user_summary_original dataframe by mapping the product name to the SRP value
+user_summary_original['SRP'] = user_summary_original['productName'].map(prices)
+
+# read the flextokenrates.xlsx file
+flex_token_rates = pd.read_excel(r'C:\Users\oviede\OneDrive - Autodesk\Documents\Python for Exits\flextokenrates.xlsx')
+
+# create a set of product names from the flex_token_rates dataframe
+flex_products = set(flex_token_rates["productName"])
+
+# create the Flex Eligible column in the user_summary_original dataframe by checking if product name exists in the flex_products set
+user_summary_original['Flex Eligible'] = user_summary_original['productName'].apply(lambda x: 'yes' if x in flex_products else 'no')
+
+
+# Feature 1: Import data from source file
+data = pd.read_excel(r'C:\Users\oviede\OneDrive - Autodesk\Documents\Python for Exits\MASTERDATA.xlsx', 
+                     dtype={'userName': str})
+
+# Feature: Data Cleanup - Remove rows where useCount is 0
+data = data[data['useCount'] != 0]
+
+
+data['productName'] = data['productName'].replace('AutoCAD with Advance Steel', 'Advance Steel')
+data['productName'] = data['productName'].replace('BIM 360 Glue', 'BIM Collaborate')
+data['productName'] = data['productName'].replace('BIM 360 Coordinate', 'BIM Collaborate')
+data['productName'] = data['productName'].replace('BIM Coordinate', 'BIM Collaborate')
+data['productName'] = data['productName'].replace('Model Coordination', 'BIM Collaborate')
+data['productName'] = data['productName'].replace('Design Collaboration', 'BIM Collaborate')
+data['productName'] = data['productName'].replace('Revit Cloud Worksharing', 'BIM Collaborate Pro')
+data['productName'] = data['productName'].replace('Collaboration for Civil 3D', 'BIM Collaborate Pro')
+data['productName'] = data['productName'].replace('Collaboration for Plant 3D', 'BIM Collaborate Pro')
+data['productName'] = data['productName'].replace('Collaboration for AutoCAD Plant 3D', 'BIM Collaborate Pro')
+data['productName'] = data['productName'].replace('BIM 360 Collaborate', 'BIM Collaborate')
+data['productName'] = data['productName'].replace('BIM 360 Collaborate Pro', 'BIM Collaborate Pro')
+data['productName'] = data['productName'].replace('Autodesk BIM Collaborate', 'BIM Collaborate')
+data['productName'] = data['productName'].replace('Autodesk Docs', 'BIM 360 Docs')
+data['productName'] = data['productName'].replace('Autodesk Build', 'BIM 360 Build - Packs')
+data['productName'] = data['productName'].replace('Autodesk BIM Collaborate Pro', 'BIM Collaborate Pro')
+data['productName'] = data['productName'].replace('Autodesk BIM Collaborate - Daily', 'BIM Collaborate')
+data['productName'] = data['productName'].replace('Autodesk BIM Collaborate Pro - Daily', 'BIM Collaborate')
+data['productName'] = data['productName'].replace('Autodesk Docs - Daily', 'BIM 360 Docs')
+data['productName'] = data['productName'].replace('Autodesk Build - Daily', 'BIM 360 Build - Packs')
+data['productName'] = data['productName'].replace('Autodesk Forma', 'Forma')
+data['productName'] = data['productName'].replace('3DS Max Design', '3ds Max')
+
+# Feature 2: Combine AutoCAD and Advance Steel users into one product = Advance Steel
+# filter the rows where productName is "Advance Steel"
+advancesteel_manage = data[data['productName'] == "Advance Steel"]
+# filter the rows where productName is "AutoCAD" and userName is in the first filtered dataframe
+advancesteel_simulate = data[(data['productName'] == "AutoCAD") & (data["userName"].isin(advancesteel_manage["userName"]))]
+# update the productName column with "Advance Steel"
+advancesteel_simulate["productName"] = "Advance Steel"
+data.update(advancesteel_simulate)
+
+
+# Feature 2.1: Combine BIM 360 Docs and BIM Collaborate users into one product = BIM Collaborate
+# filter the rows where productName is "BIM Collaborate"
+BIMCollaborate_manage = data[data['productName'] == "BIM Collaborate"]
+# filter the rows where productName is "BIM 360 Docs" and userName is in the first filtered dataframe
+BIMCollaborate_simulate = data[(data['productName'] == "BIM 360 Docs") & (data["userName"].isin(BIMCollaborate_manage["userName"]))]
+# update the productName column with "BIM Collaborate"
+BIMCollaborate_simulate["productName"] = "BIM Collaborate"
+data.update(BIMCollaborate_simulate)
+
+# Feature 2.2: Combine BIM 360 Docs and BIM Collaborate Pro users into one product = BIM Collaborate Pro
+# filter the rows where productName is "BIM Collaborate Pro"
+BIMCollaboratePro_manage = data[data['productName'] == "BIM Collaborate Pro"]
+# filter the rows where productName is "BIM 360 Docs" and userName is in the first filtered dataframe
+BIMCollaboratePro_simulate = data[(data['productName'] == "BIM 360 Docs") & (data["userName"].isin(BIMCollaboratePro_manage["userName"]))]
+# update the productName column with "BIM Collaborate Pro"
+BIMCollaboratePro_simulate["productName"] = "BIM Collaborate Pro"
+data.update(BIMCollaboratePro_simulate)
+
+
+# Feature 2.3: Combine BIM 360 Docs and BIM 360 Build - Packs users into one product = BIM 360 Build - Packs
+# filter the rows where productName is "BIM 360 Build - Packs"
+BIMBuild_manage = data[data['productName'] == "BIM 360 Build - Packs"]
+# filter the rows where productName is "BIM 360 Docs" and userName is in the first filtered dataframe
+BIMBuild_simulate = data[(data['productName'] == "BIM 360 Docs") & (data["userName"].isin(BIMBuild_manage["userName"]))]
+# update the productName column with "BIM 360 Build - Packs"
+BIMBuild_simulate["productName"] = "BIM 360 Build - Packs"
+data.update(BIMBuild_simulate)
+
+# Feature 2.4: Combine BIM Collaborate and BIM Collaborate Pro users into one product = BIM Collaborate Pro
+# filter the rows where productName is "BIM Collaborate Pro"
+BIMCoordinatetoPro_manage = data[data['productName'] == "BIM Collaborate Pro"]
+# filter the rows where productName is "BIM Collaborate" and userName is in the first filtered dataframe
+BIMCoordinatetoPro_simulate = data[(data['productName'] == "BIM Collaborate") & (data["userName"].isin(BIMCoordinatetoPro_manage["userName"]))]
+# update the productName column with "BIM Collaborate Pro"
+BIMCoordinatetoPro_simulate["productName"] = "BIM Collaborate Pro"
+data.update(BIMCoordinatetoPro_simulate)
+
+# Feature 2.5: Combine Alias Concept and Alias AutoStudio users into one product = Alias AutoStudio
+# filter the rows where productName is "Alias AutoStudio"
+comcept_simulate = data[data['productName'] == "Alias AutoStudio"]
+# filter the rows where productName is "Alias Concept" and userName is in the first filtered dataframe
+studio_simulate = data[(data['productName'] == "Alias Concept") & (data["userName"].isin(comcept_simulate["userName"]))]
+# update the productName column with "Alias AutoStudio"
+studio_simulate["productName"] = "Alias AutoStudio"
+data.update(studio_simulate)
+
+# Feature 2.6: Combine Alias Surface and Alias AutoStudio users into one product = Alias AutoStudio
+# filter the rows where productName is "Alias AutoStudio"
+surface_simulate = data[data['productName'] == "Alias AutoStudio"]
+# filter the rows where productName is "Alias Surface" and userName is in the first filtered dataframe
+studio_simulate = data[(data['productName'] == "Alias Surface") & (data["userName"].isin(surface_simulate["userName"]))]
+# update the productName column with "Alias AutoStudio"
+studio_simulate["productName"] = "Alias AutoStudio"
+data.update(studio_simulate)
+
+# Feature 2.7: Combine AutoCAD and Civil 3D users into one product = Civil 3D
+# filter the rows where productName is "Civil 3D"
+Civil3D_manage = data[data['productName'] == "Civil 3D"]
+# filter the rows where productName is "AutoCAD" and userName is in the first filtered dataframe
+Civil3D_simulate = data[(data['productName'] == "AutoCAD") & (data["userName"].isin(Civil3D_manage["userName"]))]
+# update the productName column with "Civil 3D"
+Civil3D_simulate["productName"] = "Civil 3D"
+data.update(Civil3D_simulate)
+
+# Feature 2.8: Combine AutoCAD LT and Civil 3D users into one product = Civil 3D
+# filter the rows where productName is "Civil 3D"
+CIVIL3DD_manage = data[data['productName'] == "Civil 3D"]
+# filter the rows where productName is "AutoCAD LT" and userName is in the first filtered dataframe
+CIVIL3DD_simulate = data[(data['productName'] == "AutoCAD LT") & (data["userName"].isin(CIVIL3DD_manage["userName"]))]
+# update the productName column with "Civil 3D"
+CIVIL3DD_simulate["productName"] = "Civil 3D"
+data.update(CIVIL3DD_simulate)
+
+
+# Feature 2.7: Clean up AutoCAD column 
+autocad_products = ['AutoCAD', 'AutoCAD Architecture', 'AutoCAD Mechanical', 'AutoCAD Electrical', 
+                    'AutoCAD Map 3D', 'AutoCAD MEP', 'AutoCAD Plant 3D', 'AutoCAD Raster Design', 'AutoCAD for Mac', 'AutoCAD P&ID']
+data['productName'] = data['productName'].replace(to_replace=autocad_products, value='AutoCAD - including specialized toolsets')
+
+
+#Combine AutoCAD and AutoCAD LT users into one product = AutoCAD - including specialized toolsets
+# filter the rows where productName is "AutoCAD - including specialized toolsets"
+LT_manage = data[data['productName'] == "AutoCAD - including specialized toolsets"]
+# filter the rows where productName is "AutoCAD LT" and userName is in the first filtered dataframe
+LT_simulate = data[(data['productName'] == "AutoCAD LT") & (data["userName"].isin(LT_manage["userName"]))]
+# update the productName column with "AutoCAD - including specialized toolsets"
+LT_simulate["productName"] = "AutoCAD - including specialized toolsets"
+data.update(LT_simulate)
+
+# Additional Clean up
+data['productName'] = data['productName'].replace('AutoCAD LT for Mac', 'AutoCAD LT')
+data['productName'] = data['productName'].replace('Inventor', 'Inventor Professional')
+
+# Remove "@" symbol from "userName"
+data['userName'] = data['userName'].str.replace("@","")
+
+
+# Remove unwanted substrings from "productName"
+data['productName'] = data['productName'].str.replace("Token Flex","")
+data['productName'] = data['productName'].str.replace("- Token Flex","")
+data['productName'] = data['productName'].str.replace(" - license holder","")
+data['productName'] = data['productName'].str.replace("license holder","")
+data['productName'] = data['productName'].str.replace("- Flex Access", "")
+data['productName'] = data['productName'].str.replace("- Daily", "")
+data['productName'] = data['productName'].str.rstrip(" -")
+
+
+data['productName'] = data['productName'].replace("Eagle", "Fusion 360")
+data['productName'] = data['productName'].replace("PowerShape", "Fusion 360 with PowerShape")
+data['productName'] = data['productName'].replace("PowerMill Standard", "Fusion 360 with PowerMill Standard")
+data['productName'] = data['productName'].replace("PowerMill - Standard", "Fusion 360 with PowerMill Standard")
+data['productName'] = data['productName'].replace("PowerMill Ultimate", "Fusion 360 with PowerMill Ultimate")
+data['productName'] = data['productName'].replace("Netfabb Premium", "Fusion 360 with Netfabb Premium")
+data['productName'] = data['productName'].replace("Netfabb", "Fusion 360 with Netfabb Standard")
+data['productName'] = data['productName'].replace("Netfabb Ultimate", "Fusion 360 with Netfabb Ultimate")
+data['productName'] = data['productName'].replace("Netfabb - Ultimate", "Fusion 360 with Netfabb Ultimate")
+data['productName'] = data['productName'].replace("PowerInspect", "Fusion 360 with PowerInspect")
+data['productName'] = data['productName'].replace("PowerInspect - Ultimate", "Fusion 360 with PowerInspect")
+data['productName'] = data['productName'].replace("PowerMill - Ultimate", "Fusion 360 with PowerMill Ultimate")
+data['productName'] = data['productName'].replace("CAMplete TruePath", "Fusion 360 with CAMplete TruePath")
+data['productName'] = data['productName'].replace("CAMplete TurnMill", "Fusion 360 with CAMplete TurnMill")
+data['productName'] = data['productName'].replace("Moldflow Adviser", "Fusion 360 with Moldflow Adviser")
+data['productName'] = data['productName'].replace("Moldflow Adviser - Ultimate", "Fusion 360 with Moldflow Adviser")
+data['productName'] = data['productName'].replace("Moldflow Adviser - Standard", "Fusion 360 with Moldflow Adviser")
+data['productName'] = data['productName'].replace("Moldflow Adviser - Premium", "Fusion 360 with Moldflow Adviser")
+data['productName'] = data['productName'].replace("Moldflow Adviser Ultimate", "Fusion 360 with Moldflow Adviser")
+data['productName'] = data['productName'].replace("Moldflow Adviser Standard", "Fusion 360 with Moldflow Adviser")
+data['productName'] = data['productName'].replace("Moldflow Adviser Premium", "Fusion 360 with Moldflow Adviser")
+data['productName'] = data['productName'].replace("Moldflow Insight - Ultimate", "Moldflow Insight")
+data['productName'] = data['productName'].replace("Moldflow Insight - Standard", "Moldflow Insight")
+data['productName'] = data['productName'].replace("Moldflow Insight - Premium", "Moldflow Insight")
+data['productName'] = data['productName'].replace("Moldflow Insight Ultimate", "Moldflow Insight")
+data['productName'] = data['productName'].replace("Moldflow Insight Standard", "Moldflow Insight")
+data['productName'] = data['productName'].replace("Moldflow Insight Premium", "Moldflow Insight")
+data['productName'] = data['productName'].replace("Moldflow Synergy - Premium", "Moldflow Insight")
+data['productName'] = data['productName'].replace("Moldflow Synergy - Ultimate", "Moldflow Insight")
+data['productName'] = data['productName'].replace("Moldflow Synergy - Standard", "Moldflow Insight")
+data['productName'] = data['productName'].replace("Moldflow Synergy Premium", "Moldflow Insight")
+data['productName'] = data['productName'].replace("Moldflow Synergy Ultimate", "Moldflow Insight")
+data['productName'] = data['productName'].replace("Moldflow Synergy Standard", "Moldflow Insight")
+data['productName'] = data['productName'].replace("Moldflow Synergy", "Moldflow Insight")
+data['productName'] = data['productName'].replace("Helius PFA", "Moldflow Insight")
+data['productName'] = data['productName'].replace("FeatureCAM - Premium", "Fusion 360 - with FeatureCAM")
+data['productName'] = data['productName'].replace("FeatureCAM - Standard", "Fusion 360 - with FeatureCAM")
+data['productName'] = data['productName'].replace("FeatureCAM - Ultimate", "Fusion 360 - with FeatureCAM")
+data['productName'] = data['productName'].replace("Revit - Generative Design", "Revit")
+data['productName'] = data['productName'].replace('BIM 360 Build', 'BIM 360 Build - Packs')
+data['productName'] = data['productName'].replace('Autodesk BIM Collaborate Pro', 'BIM Collaborate Pro')
+data['productName'] = data['productName'].replace('Autodesk Docs', 'BIM 360 Docs')
+data['productName'] = data['productName'].replace('Alias Design', 'Alias Concept')
+data['productName'] = data['productName'].replace('Fusion 360', 'Fusion')
+data['productName'] = data['productName'].replace('Fusion - Ultimate', 'Fusion')
+data['productName'] = data['productName'].replace('Fusion 360 - Early adopter - Legacy', 'Fusion - Early adopter - Legacy')
+data['productName'] = data['productName'].replace('Fusion 360 - Legacy', 'Fusion - Legacy')
+data['productName'] = data['productName'].replace('Fusion 360 - with FeatureCAM', 'Fusion - with FeatureCAM')
+data['productName'] = data['productName'].replace('Fusion 360 - with FeatureCAM Standard', 'Fusion - with FeatureCAM Standard')
+data['productName'] = data['productName'].replace('Fusion 360 Manage - for third-party users', 'Fusion 360 Manage - for third-party users')
+data['productName'] = data['productName'].replace('Fusion 360 - Product Design Extension', 'Fusion Design Extension')
+data['productName'] = data['productName'].replace('Fusion 360 - Generative Design Extension', 'Fusion for Design')
+data['productName'] = data['productName'].replace('Fusion 360 for Manufacturing', 'Fusion for Manufacturing')
+data['productName'] = data['productName'].replace('Fusion 360 - Manage Extension', 'Fusion Manage')
+data['productName'] = data['productName'].replace('Fusion 360 Manage with Upchain - Enterprise', 'Fusion Manage Enterprise')
+data['productName'] = data['productName'].replace('Fusion 360 - Manage Extension', 'Fusion Manage Extension')
+data['productName'] = data['productName'].replace('Fusion 360 Manage with Upchain - Participant', 'Fusion Manage Participant')
+data['productName'] = data['productName'].replace('Fusion 360 Manage with Upchain - Sandbox', 'Fusion Manage Sandbox')
+data['productName'] = data['productName'].replace('Fusion 360 - Nesting & Fabrication Extension', 'Fusion Manufacturing Extension')
+data['productName'] = data['productName'].replace('Fusion 360 - Signal Integrity Extension', 'Fusion Signal Integrity Extension')
+data['productName'] = data['productName'].replace('Fusion 360 - Simulation Extension', 'Fusion Simulation Extension')
+data['productName'] = data['productName'].replace('Fusion 360 Team - Participant', 'Fusion Team')
+data['productName'] = data['productName'].replace('CAMplete TruePath', 'Fusion with CAMplete TruePath')
+data['productName'] = data['productName'].replace('CAMplete TruePath - legacy user', 'Fusion with CAMplete TruePath - legacy user')
+data['productName'] = data['productName'].replace('CAMplete TurnMill', 'Fusion with CAMplete TurnMill')
+data['productName'] = data['productName'].replace('CAMplete TurnMill - legacy user', 'Fusion with CAMplete TurnMill - legacy user')
+data['productName'] = data['productName'].replace('Fusion 360 with EAGLE Premium', 'Fusion with EAGLE Premium')
+data['productName'] = data['productName'].replace('Fusion 360 with EAGLE Standard', 'Fusion with EAGLE Standard')
+data['productName'] = data['productName'].replace('Fusion 360 with Moldflow Adviser', 'Fusion with Moldflow Adviser')
+data['productName'] = data['productName'].replace('Fusion 360 with Moldflow Adviser - Legacy', 'Fusion with Moldflow Adviser - Legacy')
+data['productName'] = data['productName'].replace('Fusion 360 with Netfabb Premium', 'Fusion with Netfabb Premium')
+data['productName'] = data['productName'].replace('Fusion 360 with Netfabb Standard', 'Fusion with Netfabb Standard')
+data['productName'] = data['productName'].replace('Fusion 360 with Netfabb Ultimate', 'Fusion with Netfabb Ultimate')
+data['productName'] = data['productName'].replace('Fusion 360 with PowerInspect', 'Fusion with PowerInspect')
+data['productName'] = data['productName'].replace('Fusion 360 with PowerMill Standard', 'Fusion with PowerMill Standard')
+data['productName'] = data['productName'].replace('Fusion 360 with PowerMill Ultimate', 'Fusion with PowerMill Ultimate')
+data['productName'] = data['productName'].replace('Fusion 360 with PowerShape', 'Fusion with PowerShape')
+
+
+# Feature 2.5: Combine Autodesk VRED Design and VRED Professional users into one product = VRED Professional
+# filter the rows where productName is "VRED Professional"
+VREDPRO_manage = data[data['productName'] == "VRED Professional"]
+# filter the rows where productName is "VRED Design" and userName is in the first filtered dataframe
+VREDPRO_simulate = data[(data['productName'] == "VRED Design") & (data["userName"].isin(VREDPRO_manage["userName"]))]
+# update the productName column with "VRED Professional"
+VREDPRO_simulate["productName"] = "VRED Professional"
+data.update(VREDPRO_simulate)
+
+# Feature 2.5: Combine Maya and Alias AutoStudio users into one product = Alias AutoStudio
+# filter the rows where productName is "Alias AutoStudio"
+ALIASAUTO_manage = data[data['productName'] == "Alias AutoStudio"]
+# filter the rows where productName is "Maya" and userName is in the first filtered dataframe
+ALIASAUTO_simulate = data[(data['productName'] == "Maya") & (data["userName"].isin(ALIASAUTO_manage["userName"]))]
+# update the productName column with "Alias AutoStudio"
+ALIASAUTO_simulate["productName"] = "Alias AutoStudio"
+data.update(ALIASAUTO_simulate)
+
+# Feature 2.5: Combine Alias SpeedForm and Alias AutoStudio users into one product = Alias AutoStudio
+# filter the rows where productName is "Alias AutoStudio"
+ALIASAUTOTWO_manage = data[data['productName'] == "Alias AutoStudio"]
+# filter the rows where productName is "Alias SpeedForm" and userName is in the first filtered dataframe
+ALIASAUTOTWO_simulate = data[(data['productName'] == "Alias SpeedForm") & (data["userName"].isin(ALIASAUTOTWO_manage["userName"]))]
+# update the productName column with "Alias AutoStudio"
+ALIASAUTOTWO_simulate["productName"] = "Alias AutoStudio"
+data.update(ALIASAUTOTWO_simulate)
+
+# Feature 2.5: Combine VRED Design and Alias AutoStudio users into one product = Alias AutoStudio
+# filter the rows where productName is "Alias AutoStudio"
+ALIASAUTOTHREETWO_manage = data[data['productName'] == "Alias AutoStudio"]
+# filter the rows where productName is "VRED Design" and userName is in the first filtered dataframe
+ALIASAUTOTHREETWO_simulate = data[(data['productName'] == "VRED Design") & (data["userName"].isin(ALIASAUTOTHREETWO_manage["userName"]))]
+# update the productName column with "Alias AutoStudio"
+ALIASAUTOTHREETWO_simulate["productName"] = "Alias AutoStudio"
+data.update(ALIASAUTOTHREETWO_simulate)
+
+
+# Feature 3: Create new table with cleaned up data
+user_summary = pd.crosstab(index=data['userName'], columns=data['productName'], values=data['useCount'], aggfunc='sum', dropna=False)
+user_summary = user_summary.stack().reset_index().rename(columns={'level_0':'userName', 'level_1':'productName', 0:'useCount'})
+
+
+
+# save the original product names in a column
+user_summary['original_productName'] = user_summary['productName']
+user_summary["Product Count"] = user_summary.groupby("userName")["productName"].transform(lambda x: x.nunique())
+user_summary["Max Tokens"] = user_summary.apply(lambda x: data[(data["userName"] == x["userName"]) & (data["productName"] == x["productName"])].groupby(data["usageDate"].dt.to_period("M")).sum(numeric_only=True)["useCount"].max(), axis=1)
+user_summary["Unique Product Count"] = user_summary.groupby("userName")["productName"].transform("nunique")
+user_summary = user_summary.sort_values(by=["userName"])
+user_summary["Days of Use"] = user_summary.apply(lambda x: data[(data["userName"] == x["userName"]) & (data["productName"] == x["productName"])].groupby(data["usageDate"].dt.to_period("D")).count().count()["userName"], axis=1)
+
+
+# read the SamplePriceList.xslx file
+sample_price_list = pd.read_excel(r'C:\Users\oviede\OneDrive - Autodesk\Documents\Python for Exits\PricelistMay24.xlsx')
+
+# create a dictionary from the sample_price_list for product name and SRP
+prices = sample_price_list.set_index('productName')['SRP'].to_dict()
+
+# create the SRP column in the user_summary dataframe by mapping the product name to the SRP value
+user_summary['SRP'] = user_summary['productName'].map(prices)
+
+# read the flextokenrates.xlsx file
+flex_token_rates = pd.read_excel(r'C:\Users\oviede\OneDrive - Autodesk\Documents\Python for Exits\flextokenrates.xlsx')
+
+# create a set of product names from the flex_token_rates dataframe
+flex_products = set(flex_token_rates["productName"])
+
+# create the Flex Eligible column in the user_summary dataframe by checking if product name exists in the flex_products set
+user_summary['Flex Eligible'] = user_summary['productName'].apply(lambda x: 'yes' if x in flex_products else 'no')
+
+
+
+single_product_users = user_summary[user_summary["Unique Product Count"] == 1]
+multi_product_users = user_summary[user_summary["Unique Product Count"] > 1]
+
+# Read the PricelistMay24.xlsx file
+sample_price_list = pd.read_excel(r'C:\Users\oviede\OneDrive - Autodesk\Documents\Python for Exits\PricelistMay24.xlsx', sheet_name=['AECCOLL','PDMCOLL', 'MAECOLL'])
+
+# Extract the AECCOLL sheet
+aec_coll_sheet = sample_price_list['AECCOLL']
+
+# Extract the PDMCOLL sheet
+pdm_coll_sheet = sample_price_list['PDMCOLL']
+
+# Extract the MAECOLL sheet
+mae_coll_sheet = sample_price_list['MAECOLL']
+
+# Create a set of product names from the aec_coll_sheet
+aec_products = set(aec_coll_sheet["productName"])
+
+# Create a set of product names from the pdm_coll_sheet
+pdm_products = set(pdm_coll_sheet["productName"])
+
+# Create a set of product names from the mae_coll_sheet
+mae_products = set(mae_coll_sheet["productName"])
+
+# Create aec_collection table by filtering multi_product_users for userName having 2 or more matching unique productName in "multi_product_users" that occur in the "productName" column of "AECCOLL"
+aec_collection = multi_product_users[multi_product_users['productName'].isin(aec_products)].groupby('userName').filter(lambda x: len(x) >= 2)
+
+# Create pdm_collection table by filtering multi_product_users for userName having 2 or more matching unique productName in "multi_product_users" that occur in the "productName" column of "PDMCOLL"
+pdm_collection = multi_product_users[multi_product_users['productName'].isin(pdm_products)].groupby('userName').filter(lambda x: len(x) >= 2)
+
+# Create mae_collection table by filtering multi_product_users for userName having 2 or more matching unique productName in "multi_product_users" that occur in the "productName" column of "MAECOLL"
+mae_collection = multi_product_users[multi_product_users['productName'].isin(mae_products)].groupby('userName').filter(lambda x: len(x) >= 2)
+
+# Get the list of users and products in aec_collection and pdm_collection
+aec_users_products = set(aec_collection[['userName', 'productName']].apply(tuple, axis=1))
+pdm_users_products = set(pdm_collection[['userName', 'productName']].apply(tuple, axis=1))
+mae_users_products = set(mae_collection[['userName', 'productName']].apply(tuple, axis=1))
+
+# Get the list of users and products in multi_product_users
+multi_users_products = set(multi_product_users[['userName', 'productName']].apply(tuple, axis=1))
+
+# Add "In Collection" column
+multi_product_users.loc[:, "In Collection"] = multi_product_users.apply(lambda row: 'yes' if (row['userName'], row['productName']) in aec_users_products.union(pdm_users_products).union(mae_users_products) else 'no', axis=1)
+
+
+
+
+def check_collection_type(row):
+    if ((row['userName'], row['productName']) in pdm_users_products) and ((row['userName'], row['productName']) in aec_users_products):
+        return "BOTH"
+    elif ((row['userName'], row['productName']) in pdm_users_products):
+        return "PDM"
+    elif ((row['userName'], row['productName']) in mae_users_products):
+        return "MAE"
+    elif ((row['userName'], row['productName']) in aec_users_products):
+        return "AEC"
+    else:
+        return "N/A"
+
+multi_product_users['Collection Type'] = multi_product_users.apply(lambda row: check_collection_type(row), axis=1)
+
+
+# Create new table with filtered userName values
+MUPRODUCTS_No_Coll = multi_product_users[multi_product_users['Collection Type'].isin(['N/A'])]
+
+
+
+# Read the "TOKENRATE" sheet from the PricelistMay24.xlsx file
+token_rate_df = pd.read_excel(r'C:\Users\oviede\OneDrive - Autodesk\Documents\Python for Exits\PricelistMay24.xlsx', sheet_name='TOKENRATE')
+
+# Create a dictionary from the token_rate_df for product name and token rate
+token_rates = token_rate_df.set_index('productName')['tokenrate'].to_dict()
+
+aec_collection["Token Rate"] = aec_collection["productName"].apply(lambda x: token_rates.get(x, "N/A"))
+single_product_users["Token Rate"] = single_product_users["productName"].apply(lambda x: token_rates.get(x, "N/A"))
+multi_product_users["Token Rate"] = multi_product_users["productName"].apply(lambda x: token_rates.get(x, "N/A"))
+pdm_collection["Token Rate"] = pdm_collection["productName"].apply(lambda x: token_rates.get(x, "N/A"))
+MUPRODUCTS_No_Coll["Token Rate"] = MUPRODUCTS_No_Coll["productName"].apply(lambda x: token_rates.get(x, "N/A"))
+user_summary["Token Rate"] = user_summary["productName"].apply(lambda x: token_rates.get(x, "N/A"))
+user_summary_original["Token Rate"] = user_summary_original["productName"].apply(lambda x: token_rates.get(x, "N/A"))
+mae_collection["Token Rate"] = mae_collection["productName"].apply(lambda x: token_rates.get(x, "N/A"))
+
+# Add Yearly Tokens column
+single_product_users["Yearly Tokens"] = single_product_users["Max Tokens"] * single_product_users["Token Rate"].replace("N/A", 0) * 12
+multi_product_users["Yearly Tokens"] = multi_product_users["Max Tokens"] * multi_product_users["Token Rate"].replace("N/A", 0) * 12
+aec_collection["Yearly Tokens"] = aec_collection["Max Tokens"] * aec_collection["Token Rate"].replace("N/A", 0) * 12
+pdm_collection["Yearly Tokens"] = pdm_collection["Max Tokens"] * pdm_collection["Token Rate"].replace("N/A", 0) * 12
+MUPRODUCTS_No_Coll["Yearly Tokens"] = MUPRODUCTS_No_Coll["Max Tokens"] * MUPRODUCTS_No_Coll["Token Rate"].replace("N/A", 0) * 12
+user_summary["Yearly Tokens"] = user_summary["Max Tokens"] * user_summary["Token Rate"].replace("N/A", 0) * 12
+user_summary_original["Yearly Tokens"] = user_summary_original["Max Tokens"] * user_summary_original["Token Rate"].replace("N/A", 0) * 12
+mae_collection["Yearly Tokens"] = mae_collection["Max Tokens"] * mae_collection["Token Rate"].replace("N/A", 0) * 12
+
+
+def add_yearly_token_cost_column(table, column_name):
+    # Read the "TOKENCOST" sheet from the PricelistMay24.xlsx file
+    token_cost_df = pd.read_excel(r'C:\Users\oviede\OneDrive - Autodesk\Documents\Python for Exits\PricelistMay24.xlsx', sheet_name='TOKENCOST')
+
+    # Get the token cost value from the token_cost_df
+    token_cost = token_cost_df.at[0, 'tokenCost']
+
+    # Add the new "Yearly Token Cost" column to the table
+    table[column_name] = table["Yearly Tokens"] * token_cost 
+
+    # Replace NaN values in the new column with 0
+    table[column_name].fillna(0, inplace=True)
+    
+# Add the "Yearly Token Cost" column to all output tables
+add_yearly_token_cost_column(aec_collection, "Yearly Token Cost")
+add_yearly_token_cost_column(pdm_collection, "Yearly Token Cost")
+add_yearly_token_cost_column(single_product_users, "Yearly Token Cost")
+add_yearly_token_cost_column(multi_product_users, "Yearly Token Cost")
+add_yearly_token_cost_column(MUPRODUCTS_No_Coll, "Yearly Token Cost")
+add_yearly_token_cost_column(user_summary, "Yearly Token Cost")
+add_yearly_token_cost_column(mae_collection, "Yearly Token Cost")
+add_yearly_token_cost_column(user_summary_original, "Yearly Token Cost")
+
+# Add SRP > Flex column
+single_product_users["SRP above Flex"] = np.where( single_product_users["SRP"]*0.8 >  single_product_users["Yearly Token Cost"], "YES", "NO")
+multi_product_users["SRP above Flex"] = np.where(multi_product_users["SRP"]*0.8 > multi_product_users["Yearly Token Cost"], "YES", "NO")
+aec_collection["SRP above Flex"] = np.where(aec_collection["SRP"]*0.8 > aec_collection["Yearly Token Cost"], "YES", "NO")
+pdm_collection["SRP above Flex"] = np.where(pdm_collection["SRP"]*0.8 > pdm_collection["Yearly Token Cost"], "YES", "NO")
+MUPRODUCTS_No_Coll["SRP above Flex"] = np.where(MUPRODUCTS_No_Coll["SRP"]*0.8 > MUPRODUCTS_No_Coll["Yearly Token Cost"], "YES", "NO")
+user_summary["SRP above Flex"] = np.where(user_summary["SRP"]*0.8 > user_summary["Yearly Token Cost"], "YES", "NO")
+mae_collection["SRP above Flex"] = np.where(mae_collection["SRP"]*0.8 > mae_collection["Yearly Token Cost"], "YES", "NO")
+user_summary_original["SRP above Flex"] = np.where(user_summary_original["SRP"]*0.8 > user_summary_original["Yearly Token Cost"], "YES", "NO")
+
+# Add all product SRP Values
+single_product_users["All Product SRP"] = single_product_users.groupby("userName")["SRP"].transform(lambda x: x.sum())
+multi_product_users["All Product SRP"] = multi_product_users.groupby("userName")["SRP"].transform(lambda x: x.sum())
+aec_collection["All Product SRP"] = aec_collection.groupby("userName")["SRP"].transform(lambda x: x.sum())
+pdm_collection["All Product SRP"] = pdm_collection.groupby("userName")["SRP"].transform(lambda x: x.sum())
+MUPRODUCTS_No_Coll["All Product SRP"] = MUPRODUCTS_No_Coll.groupby("userName")["SRP"].transform(lambda x: x.sum())
+user_summary["All Product SRP"] = user_summary.groupby("userName")["SRP"].transform(lambda x: x.sum())
+user_summary_original["All Product SRP"] = user_summary_original.groupby("userName")["SRP"].transform(lambda x: x.sum())
+mae_collection["All Product SRP"] = mae_collection.groupby("userName")["SRP"].transform(lambda x: x.sum())
+
+# Add all Flex SRP Values
+single_product_users["All Flex SRP"] = single_product_users.groupby("userName")["Yearly Token Cost"].transform(lambda x: x.sum())
+multi_product_users["All Flex SRP"] = multi_product_users.groupby("userName")["Yearly Token Cost"].transform(lambda x: x.sum())
+aec_collection["All Flex SRP"] = aec_collection.groupby("userName")["Yearly Token Cost"].transform(lambda x: x.sum())
+pdm_collection["All Flex SRP"] = pdm_collection.groupby("userName")["Yearly Token Cost"].transform(lambda x: x.sum())
+MUPRODUCTS_No_Coll["All Flex SRP"] = MUPRODUCTS_No_Coll.groupby("userName")["Yearly Token Cost"].transform(lambda x: x.sum())
+user_summary["All Flex SRP"] = user_summary.groupby("userName")["Yearly Token Cost"].transform(lambda x: x.sum())
+user_summary_original["All Flex SRP"] = user_summary_original.groupby("userName")["Yearly Token Cost"].transform(lambda x: x.sum())
+mae_collection["All Flex SRP"] = mae_collection.groupby("userName")["Yearly Token Cost"].transform(lambda x: x.sum())
+
+
+
+
+# Add "Exit To" column to single_product_users table
+single_product_users["Exit To"] = np.where(single_product_users["Flex Eligible"] == "no", "Named",
+                                np.where(single_product_users["SRP above Flex"] == "YES", "Flex", "Named"))
+
+# Add "Exit To" column to MUPRODUCTS_No_Coll table
+MUPRODUCTS_No_Coll["Exit To"] = np.where(MUPRODUCTS_No_Coll["Flex Eligible"] == "no", "Named",
+                                np.where(MUPRODUCTS_No_Coll["SRP above Flex"] == "YES", "Flex", "Named"))
+
+
+
+# COLL ONLY PRODUCTS
+# Read the "AECCOLL" sheet from the PricelistMay24.xlsx file
+aec_coll_df = pd.read_excel(r'C:\Users\oviede\OneDrive - Autodesk\Documents\Python for Exits\PricelistMay24.xlsx', sheet_name='AECCOLL')
+# Create a dictionary from the aec_coll_df for product name and Collection Only value
+aec_coll_dict = aec_coll_df.set_index('productName')['Collection Only'].to_dict()
+# Add the new "COLL Only Product" column to the aec_collection table
+aec_collection["COLL Only Product"] = aec_collection["productName"].map(aec_coll_dict)
+# Replace NaN values in the new column with "No"
+aec_collection["COLL Only Product"].fillna("No", inplace=True)
+# Replace "Yes" values in the new column with "Yes"
+aec_collection["COLL Only Product"].replace("Yes", "Yes", inplace=True)
+
+# Read the "PDM" sheet from the PricelistMay24.xlsx file
+pdm_coll_df = pd.read_excel(r'C:\Users\oviede\OneDrive - Autodesk\Documents\Python for Exits\PricelistMay24.xlsx', sheet_name='PDMCOLL')
+# Create a dictionary from the aec_coll_df for product name and Collection Only value
+pdm_coll_dict = pdm_coll_df.set_index('productName')['Collection Only'].to_dict()
+# Add the new "COLL Only Product" column to the aec_collection table
+pdm_collection["COLL Only Product"] = pdm_collection["productName"].map(pdm_coll_dict)
+# Replace NaN values in the new column with "No"
+pdm_collection["COLL Only Product"].fillna("No", inplace=True)
+# Replace "Yes" values in the new column with "Yes"
+pdm_collection["COLL Only Product"].replace("Yes", "Yes", inplace=True)
+
+
+# Read the "mae" sheet from the PricelistMay24.xlsx file
+mae_coll_df = pd.read_excel(r'C:\Users\oviede\OneDrive - Autodesk\Documents\Python for Exits\PricelistMay24.xlsx', sheet_name='MAECOLL')
+# Create a dictionary from the aec_coll_df for product name and Collection Only value
+mae_coll_dict = mae_coll_df.set_index('productName')['Collection Only'].to_dict()
+# Add the new "COLL Only Product" column to the aec_collection table
+mae_collection["COLL Only Product"] = mae_collection["productName"].map(mae_coll_dict)
+# Replace NaN values in the new column with "No"
+mae_collection["COLL Only Product"].fillna("No", inplace=True)
+# Replace "Yes" values in the new column with "Yes"
+mae_collection["COLL Only Product"].replace("Yes", "Yes", inplace=True)
+
+# Add "COLL Unique Product" column to aec_collection table
+aec_collection["COLL Unique Product"] = aec_collection.groupby('userName')['productName'].transform(lambda x: x.nunique())
+# Add "COLL Unique Product" column to pdm_collection table
+pdm_collection["COLL Unique Product"] = pdm_collection.groupby('userName')['productName'].transform(lambda x: x.nunique())
+# Add "COLL Unique Product" column to mae_collection table
+mae_collection["COLL Unique Product"] = mae_collection.groupby('userName')['productName'].transform(lambda x: x.nunique())
+
+
+# Add distinction for if collection $ is < cost of individual products
+
+# Read the "COLLCOST" sheet from the PricelistMay24.xlsx file
+collcost_df = pd.read_excel(r'C:\Users\oviede\OneDrive - Autodesk\Documents\Python for Exits\PricelistMay24.xlsx', sheet_name='COLLCOST')
+# Get the cost value for "AEC" collection
+aec_cost = collcost_df[collcost_df['collection'] == 'AEC']['cost'].values[0]
+# Add the "COLL SRP less" column to the "aec_collection" table
+aec_collection['COLL SRP less'] = aec_collection.apply(lambda row: 'Yes' if row['All Product SRP'] >= aec_cost else 'No', axis=1)
+
+# Read the "COLLCOST" sheet from the PricelistMay24.xlsx file
+collcost_df = pd.read_excel(r'C:\Users\oviede\OneDrive - Autodesk\Documents\Python for Exits\PricelistMay24.xlsx', sheet_name='COLLCOST')
+# Get the cost value for "PDM" collection
+pdm_cost = collcost_df[collcost_df['collection'] == 'PDM']['cost'].values[0]
+# Add the "COLL SRP less" column to the "pdm_collection" table
+pdm_collection['COLL SRP less'] = pdm_collection.apply(lambda row: 'Yes' if row['All Product SRP'] >= pdm_cost else 'No', axis=1)
+
+# Read the "COLLCOST" sheet from the PricelistMay24.xlsx file
+collcost_df = pd.read_excel(r'C:\Users\oviede\OneDrive - Autodesk\Documents\Python for Exits\PricelistMay24.xlsx', sheet_name='COLLCOST')
+# Get the cost value for "mae" collection
+mae_cost = collcost_df[collcost_df['collection'] == 'MAE']['cost'].values[0]
+# Add the "COLL SRP less" column to the "mae_collection" table
+mae_collection['COLL SRP less'] = mae_collection.apply(lambda row: 'Yes' if row['All Product SRP'] >= mae_cost else 'No', axis=1)
+
+# Add "Exit To" Column for scenario with No Flex
+# Create a dictionary for the COLL Only Product column for userName
+coll_only_product = aec_collection.groupby("userName")["COLL Only Product"].first().to_dict()
+
+# Create a dictionary for the COLL SRP less column for userName
+coll_srp_less = aec_collection.groupby("userName")["COLL SRP less"].first().to_dict()
+
+# Add the "EXIT TO NO FLEX" column to "aec_collection" table
+aec_collection["EXIT TO NO FLEX"] = aec_collection["userName"].map(lambda x: 'Collection' if coll_only_product.get(x) == 'Yes' or coll_srp_less.get(x) == 'Yes' else 'Named')
+
+# Add "Exit To" Column for scenario with No Flex
+# Create a dictionary for the COLL Only Product column for userName
+coll_only_product = pdm_collection.groupby("userName")["COLL Only Product"].first().to_dict()
+
+# Create a dictionary for the COLL SRP less column for userName
+coll_srp_less = pdm_collection.groupby("userName")["COLL SRP less"].first().to_dict()
+
+# Add the "EXIT TO NO FLEX" column to "pdm_collection" table
+pdm_collection["EXIT TO NO FLEX"] = pdm_collection["userName"].map(lambda x: 'Collection' if coll_only_product.get(x) == 'Yes' or coll_srp_less.get(x) == 'Yes' else 'Named')
+
+# Add "Exit To" Column for scenario with No Flex
+# Create a dictionary for the COLL Only Product column for userName
+coll_only_product = mae_collection.groupby("userName")["COLL Only Product"].first().to_dict()
+
+# Create a dictionary for the COLL SRP less column for userName
+coll_srp_less = mae_collection.groupby("userName")["COLL SRP less"].first().to_dict()
+
+# Add the "EXIT TO NO FLEX" column to "mae_collection" table
+mae_collection["EXIT TO NO FLEX"] = mae_collection["userName"].map(lambda x: 'Collection' if coll_only_product.get(x) == 'Yes' or coll_srp_less.get(x) == 'Yes' else 'Named')
+
+# Create Flexit Logic
+
+# Add a new column "EXIT TO FLEX INITIAL" 
+aec_collection["EXIT TO FLEX INITIAL"] = np.where(aec_collection["SRP above Flex"] == "YES", "Flex", "Named")
+pdm_collection["EXIT TO FLEX INITIAL"] = np.where(pdm_collection["SRP above Flex"] == "YES", "Flex", "Named")
+mae_collection["EXIT TO FLEX INITIAL"] = np.where(mae_collection["SRP above Flex"] == "YES", "Flex", "Named")
+
+# Add the condition for the "Flex Eligible" column
+aec_collection.loc[(aec_collection["Flex Eligible"] == "no") & (aec_collection["EXIT TO FLEX INITIAL"] == "Flex"), "EXIT TO FLEX INITIAL"] = "Named"
+pdm_collection.loc[(pdm_collection["Flex Eligible"] == "no") & (pdm_collection["EXIT TO FLEX INITIAL"] == "Flex"), "EXIT TO FLEX INITIAL"] = "Named"
+mae_collection.loc[(mae_collection["Flex Eligible"] == "no") & (mae_collection["EXIT TO FLEX INITIAL"] == "Flex"), "EXIT TO FLEX INITIAL"] = "Named"
+
+aec_flex = pd.DataFrame({'Flex': aec_collection.groupby("userName")["EXIT TO FLEX INITIAL"].apply(lambda x: x[x == 'Flex'].count()),
+                       'Named': aec_collection.groupby("userName")["EXIT TO FLEX INITIAL"].apply(lambda x: x[x == 'Named'].count())})
+aec_flex = aec_flex.merge(aec_collection[["userName", "All Product SRP", "All Flex SRP"]], on="userName", how="left")
+
+pdm_flex = pd.DataFrame({'Flex': pdm_collection.groupby("userName")["EXIT TO FLEX INITIAL"].apply(lambda x: x[x == 'Flex'].count()),
+                       'Named': pdm_collection.groupby("userName")["EXIT TO FLEX INITIAL"].apply(lambda x: x[x == 'Named'].count())})
+pdm_flex = pdm_flex.merge(pdm_collection[["userName", "All Product SRP", "All Flex SRP"]], on="userName", how="left")
+
+mae_flex = pd.DataFrame({'Flex': mae_collection.groupby("userName")["EXIT TO FLEX INITIAL"].apply(lambda x: x[x == 'Flex'].count()),
+                       'Named': mae_collection.groupby("userName")["EXIT TO FLEX INITIAL"].apply(lambda x: x[x == 'Named'].count())})
+mae_flex = mae_flex.merge(mae_collection[["userName", "All Product SRP", "All Flex SRP"]], on="userName", how="left")
+
+
+# Read the "COLLCOST" sheet from the PricelistMay24.xlsx file
+collcost_df = pd.read_excel(r'C:\Users\oviede\OneDrive - Autodesk\Documents\Python for Exits\PricelistMay24.xlsx', sheet_name='COLLCOST')
+# Get the cost value for "AEC" collection
+aec_cost = collcost_df[collcost_df['collection'] == 'AEC']['cost'].values[0]
+# add the 'FLEX LT COLL' column to the aec_flex table
+aec_flex['FLEX LT COLL'] = np.where(aec_flex['All Flex SRP'] < aec_cost, 'Yes', 'No')
+aec_flex = aec_flex.drop_duplicates(subset = "userName", keep = "first")
+# Read the "COLLCOST" sheet from the PricelistMay24.xlsx file
+collcost_df = pd.read_excel(r'C:\Users\oviede\OneDrive - Autodesk\Documents\Python for Exits\PricelistMay24.xlsx', sheet_name='COLLCOST')
+# Get the cost value for "PDM" collection
+pdm_cost = collcost_df[collcost_df['collection'] == 'PDM']['cost'].values[0]
+# add the 'FLEX LT COLL' column to the pdm_flex table
+pdm_flex['FLEX LT COLL'] = np.where(pdm_flex['All Flex SRP'] < pdm_cost, 'Yes', 'No')
+pdm_flex = pdm_flex.drop_duplicates(subset = "userName", keep = "first")
+
+# Read the "COLLCOST" sheet from the PricelistMay24.xlsx file
+collcost_df = pd.read_excel(r'C:\Users\oviede\OneDrive - Autodesk\Documents\Python for Exits\PricelistMay24.xlsx', sheet_name='COLLCOST')
+# Get the cost value for "mae" collection
+mae_cost = collcost_df[collcost_df['collection'] == 'MAE']['cost'].values[0]
+# add the 'FLEX LT COLL' column to the mae_flex table
+mae_flex['FLEX LT COLL'] = np.where(mae_flex['All Flex SRP'] < mae_cost, 'Yes', 'No')
+mae_flex = mae_flex.drop_duplicates(subset = "userName", keep = "first")
+
+
+
+
+# Create Exit to Flex Column
+aec_collection["Exit To Flex"] = None
+
+# Join the two DataFrames to be able to reference the "Flex" and "Named" columns in the "aec_flex" DataFrame
+aec_collection = aec_collection.merge(aec_flex, on="userName", how="left")
+
+# Define the conditions and assign the appropriate value to the "Exit To Flex" column
+
+aec_collection.loc[(aec_collection["Flex"] == 1) & (aec_collection["Named"] >= 2), "Exit To Flex"] = "Collection"
+aec_collection.loc[(aec_collection["Flex"] == 1) & (aec_collection["Named"] == 1) & (aec_collection["EXIT TO FLEX INITIAL"] == "Flex"), "Exit To Flex"] = "Flex"
+aec_collection.loc[(aec_collection["Flex"] == 1) & (aec_collection["Named"] == 1) & (aec_collection["EXIT TO FLEX INITIAL"] == "Named"), "Exit To Flex"] = "Named"
+aec_collection.loc[(aec_collection["Flex"] == 0) & (aec_collection["Named"] >= 2), "Exit To Flex"] = "Collection"
+aec_collection.loc[(aec_collection["Flex"] == 2) & (aec_collection["Named"] == 0), "Exit To Flex"] = "Flex"
+aec_collection.loc[(aec_collection["Flex"] == 2) & (aec_collection["Named"] == 1) & (aec_collection["EXIT TO FLEX INITIAL"] == "Flex"), "Exit To Flex"] = "Flex"
+aec_collection.loc[(aec_collection["Flex"] == 2) & (aec_collection["Named"] == 1) & (aec_collection["EXIT TO FLEX INITIAL"] == "Named"), "Exit To Flex"] = "Named"
+aec_collection.loc[(aec_collection["Flex"] > 2) & (aec_collection["Named"] == 0) & (aec_collection["FLEX LT COLL"] == "Yes"), "Exit To Flex"] = "Flex"
+aec_collection.loc[(aec_collection["Flex"] > 2) & (aec_collection["Named"] == 0) & (aec_collection["FLEX LT COLL"] == "No"), "Exit To Flex"] = "Collection"
+aec_collection.loc[(aec_collection["Flex"] > 2) & (aec_collection["Named"] >= 1) & (aec_collection["FLEX LT COLL"] == "Yes"), "Exit To Flex"] = "Flex"
+aec_collection.loc[(aec_collection["Flex"] > 2) & (aec_collection["Named"] >= 1) & (aec_collection["FLEX LT COLL"] == "No"), "Exit To Flex"] = "Collection"
+aec_collection.loc[(aec_collection["Flex"] == 2) & (aec_collection["Named"] == 2) & (aec_collection["FLEX LT COLL"] == "Yes"), "Exit To Flex"] = "Flex"
+aec_collection.loc[(aec_collection["Flex"] == 2) & (aec_collection["Named"] == 2) & (aec_collection["COLL SRP less"] == "No"), "Exit To Flex"] = "Named"
+aec_collection.loc[(aec_collection["Flex"] == 2) & (aec_collection["Named"] == 2) & (aec_collection["COLL SRP less"] == "Yes"), "Exit To Flex"] = "Collection"
+aec_collection.loc[(aec_collection["Flex"] >= 2) & (aec_collection["Named"] >= 2) & (aec_collection["COLL SRP less"] == "Yes"), "Exit To Flex"] = "Collection"
+aec_collection.loc[(aec_collection["COLL Only Product"] == "Yes"), "Exit To Flex"] = "Collection"
+
+
+# Get the unique user names
+user_names = aec_collection["userName"].unique()
+for user_name in user_names:
+    user_df = aec_collection[aec_collection["userName"] == user_name]
+    if "Collection" in user_df["Exit To Flex"].values:
+        aec_collection.loc[user_df.index, "Exit To Flex"] = np.where(user_df["Exit To Flex"] != "Collection", "Collection", user_df["Exit To Flex"])
+
+
+# Create Cost Basis Column 
+aec_collection["Cost Basis"] = None
+
+# Define the conditions and assign the appropriate value to the "Cost Basis" column
+aec_collection.loc[aec_collection["Exit To Flex"] == "Flex", "Cost Basis"] = aec_collection.loc[aec_collection["Exit To Flex"] == "Flex", "Yearly Token Cost"]
+aec_collection.loc[aec_collection["Exit To Flex"] == "Named", "Cost Basis"] = aec_collection.loc[aec_collection["Exit To Flex"] == "Named", "SRP"]
+
+# Group by "userName" and sum the values in the "Cost Basis" column
+aec_collection = aec_collection.assign(Total_Cost_Basis=aec_collection.groupby("userName")["Cost Basis"].transform('sum'))
+
+# Get the cost from the collcost_df
+aec_cost = collcost_df[collcost_df['collection'] == 'PDM']['cost'].values[0]
+
+# Assign the cost to the "Cost Basis" column for the "Collection" exit
+aec_collection.loc[aec_collection["Exit To Flex"] == "Collection", "Cost Basis"] = aec_cost
+aec_collection.loc[aec_collection["Exit To Flex"] == "Collection", "Total_Cost_Basis"] = aec_cost
+
+# Create "Final Exit To" column 
+collcost_df = pd.read_excel(r'C:\Users\oviede\OneDrive - Autodesk\Documents\Python for Exits\PricelistMay24.xlsx', sheet_name='COLLCOST')
+aec_cost = collcost_df[collcost_df['collection'] == 'PDM']['cost'].values[0]
+
+aec_collection["Final Exit To Flex"] = None
+
+aec_collection.loc[aec_collection["Total_Cost_Basis"] >= aec_cost, "Final Exit To Flex"] = "Collection"
+aec_collection.loc[aec_collection["Total_Cost_Basis"] < aec_cost, "Final Exit To Flex"] = aec_collection["Exit To Flex"]
+
+# Group by "userName" and "productName" and check if "Named" is designated in "EXIT TO NO FLEX" for all products
+no_flex_designated_named = aec_collection.groupby(["userName", "productName"])["EXIT TO NO FLEX"].apply(lambda x: all(x == "Named")).reset_index()
+
+if not no_flex_designated_named.empty:
+    # Filter the "userName" values where "Named" is designated in "EXIT TO NO FLEX" for all products
+    user_names = no_flex_designated_named[no_flex_designated_named["EXIT TO NO FLEX"]].loc[:, "userName"].unique()
+
+    # Change all instances of "Collection" to "Named" in the "Final Exit To Flex" column for the selected user names
+    aec_collection.loc[(aec_collection["userName"].isin(user_names)) & (aec_collection["Final Exit To Flex"] == "Collection"), "Final Exit To Flex"] = "Named"
+
+
+
+# Create Exit to Flex Column
+pdm_collection["Exit To Flex"] = None
+
+# Join the two DataFrames to be able to reference the "Flex" and "Named" columns in the "pdm_flex" DataFrame
+pdm_collection = pdm_collection.merge(pdm_flex, on="userName", how="left")
+
+# Define the conditions and assign the appropriate value to the "Exit To Flex" column
+pdm_collection.loc[(pdm_collection["Flex"] == 1) & (pdm_collection["Named"] >= 2), "Exit To Flex"] = "Collection"
+pdm_collection.loc[(pdm_collection["Flex"] == 1) & (pdm_collection["Named"] == 1) & (pdm_collection["EXIT TO FLEX INITIAL"] == "Flex"), "Exit To Flex"] = "Flex"
+pdm_collection.loc[(pdm_collection["Flex"] == 1) & (pdm_collection["Named"] == 1) & (pdm_collection["EXIT TO FLEX INITIAL"] == "Named"), "Exit To Flex"] = "Named"
+pdm_collection.loc[(pdm_collection["Flex"] == 0) & (pdm_collection["Named"] >= 2), "Exit To Flex"] = "Collection"
+pdm_collection.loc[(pdm_collection["Flex"] == 2) & (pdm_collection["Named"] == 0), "Exit To Flex"] = "Flex"
+pdm_collection.loc[(pdm_collection["Flex"] == 2) & (pdm_collection["Named"] == 1) & (pdm_collection["EXIT TO FLEX INITIAL"] == "Flex"), "Exit To Flex"] = "Flex"
+pdm_collection.loc[(pdm_collection["Flex"] == 2) & (pdm_collection["Named"] == 1) & (pdm_collection["EXIT TO FLEX INITIAL"] == "Named"), "Exit To Flex"] = "Named"
+pdm_collection.loc[(pdm_collection["Flex"] > 2) & (pdm_collection["Named"] == 0) & (pdm_collection["FLEX LT COLL"] == "Yes"), "Exit To Flex"] = "Flex"
+pdm_collection.loc[(pdm_collection["Flex"] > 2) & (pdm_collection["Named"] == 0) & (pdm_collection["FLEX LT COLL"] == "No"), "Exit To Flex"] = "Collection"
+pdm_collection.loc[(pdm_collection["Flex"] > 2) & (pdm_collection["Named"] >= 1) & (pdm_collection["FLEX LT COLL"] == "Yes"), "Exit To Flex"] = "Flex"
+pdm_collection.loc[(pdm_collection["Flex"] > 2) & (pdm_collection["Named"] >= 1) & (pdm_collection["FLEX LT COLL"] == "No"), "Exit To Flex"] = "Collection"
+pdm_collection.loc[(pdm_collection["Flex"] == 2) & (pdm_collection["Named"] == 2) & (pdm_collection["FLEX LT COLL"] == "Yes"), "Exit To Flex"] = "Flex"
+pdm_collection.loc[(pdm_collection["Flex"] == 2) & (pdm_collection["Named"] == 2) & (pdm_collection["COLL SRP less"] == "No"), "Exit To Flex"] = "Named"
+pdm_collection.loc[(pdm_collection["Flex"] == 2) & (pdm_collection["Named"] == 2) & (pdm_collection["COLL SRP less"] == "Yes"), "Exit To Flex"] = "Collection"
+pdm_collection.loc[(pdm_collection["Flex"] >= 2) & (pdm_collection["Named"] >= 2) & (pdm_collection["COLL SRP less"] == "Yes"), "Exit To Flex"] = "Collection"
+pdm_collection.loc[(pdm_collection["COLL Only Product"] == "Yes"), "Exit To Flex"] = "Collection"
+
+
+# Get the unique user names
+user_names = pdm_collection["userName"].unique()
+for user_name in user_names:
+    user_df = pdm_collection[pdm_collection["userName"] == user_name]
+    if "Collection" in user_df["Exit To Flex"].values:
+        pdm_collection.loc[user_df.index, "Exit To Flex"] = np.where(user_df["Exit To Flex"] != "Collection", "Collection", user_df["Exit To Flex"])
+
+# Create Cost Basis Column 
+pdm_collection["Cost Basis"] = None
+
+# Define the conditions and assign the appropriate value to the "Cost Basis" column
+pdm_collection.loc[pdm_collection["Exit To Flex"] == "Flex", "Cost Basis"] = pdm_collection.loc[pdm_collection["Exit To Flex"] == "Flex", "Yearly Token Cost"]
+pdm_collection.loc[pdm_collection["Exit To Flex"] == "Named", "Cost Basis"] = pdm_collection.loc[pdm_collection["Exit To Flex"] == "Named", "SRP"]
+
+# Group by "userName" and sum the values in the "Cost Basis" column
+pdm_collection = pdm_collection.assign(Total_Cost_Basis=pdm_collection.groupby("userName")["Cost Basis"].transform('sum'))
+
+# Get the cost from the collcost_df
+pdm_cost = collcost_df[collcost_df['collection'] == 'PDM']['cost'].values[0]
+
+# Assign the cost to the "Cost Basis" column for the "Collection" exit
+pdm_collection.loc[pdm_collection["Exit To Flex"] == "Collection", "Cost Basis"] = pdm_cost
+pdm_collection.loc[pdm_collection["Exit To Flex"] == "Collection", "Total_Cost_Basis"] = pdm_cost
+
+# Create "Final Exit To" column 
+collcost_df = pd.read_excel(r'C:\Users\oviede\OneDrive - Autodesk\Documents\Python for Exits\PricelistMay24.xlsx', sheet_name='COLLCOST')
+pdm_cost = collcost_df[collcost_df['collection'] == 'PDM']['cost'].values[0]
+
+pdm_collection["Final Exit To Flex"] = None
+
+pdm_collection.loc[pdm_collection["Total_Cost_Basis"] >= pdm_cost, "Final Exit To Flex"] = "Collection"
+pdm_collection.loc[pdm_collection["Total_Cost_Basis"] < pdm_cost, "Final Exit To Flex"] = pdm_collection["Exit To Flex"]
+
+
+# Group by "userName" and "productName" and check if "Named" is designated in "EXIT TO NO FLEX" for all products
+no_flex_designated_named = pdm_collection.groupby(["userName", "productName"])["EXIT TO NO FLEX"].apply(lambda x: all(x == "Named")).reset_index()
+
+if not no_flex_designated_named.empty:
+    # Filter the "userName" values where "Named" is designated in "EXIT TO NO FLEX" for all products
+    user_names = no_flex_designated_named[no_flex_designated_named["EXIT TO NO FLEX"]].loc[:, "userName"].unique()
+
+    # Change all instances of "Collection" to "Named" in the "Final Exit To Flex" column for the selected user names
+    pdm_collection.loc[(pdm_collection["userName"].isin(user_names)) & (pdm_collection["Final Exit To Flex"] == "Collection"), "Final Exit To Flex"] = "Named"
+
+
+
+# Create Exit to Flex Column
+mae_collection["Exit To Flex"] = None
+
+# Join the two DataFrames to be able to reference the "Flex" and "Named" columns in the "mae_flex" DataFrame
+mae_collection = mae_collection.merge(mae_flex, on="userName", how="left")
+
+# Define the conditions and assign the appropriate value to the "Exit To Flex" column
+mae_collection.loc[(mae_collection["Flex"] == 1) & (mae_collection["Named"] >= 2), "Exit To Flex"] = "Collection"
+mae_collection.loc[(mae_collection["Flex"] == 1) & (mae_collection["Named"] == 1) & (mae_collection["EXIT TO FLEX INITIAL"] == "Flex"), "Exit To Flex"] = "Flex"
+mae_collection.loc[(mae_collection["Flex"] == 1) & (mae_collection["Named"] == 1) & (mae_collection["EXIT TO FLEX INITIAL"] == "Named"), "Exit To Flex"] = "Named"
+mae_collection.loc[(mae_collection["Flex"] == 0) & (mae_collection["Named"] >= 2), "Exit To Flex"] = "Collection"
+mae_collection.loc[(mae_collection["Flex"] == 2) & (mae_collection["Named"] == 0), "Exit To Flex"] = "Flex"
+mae_collection.loc[(mae_collection["Flex"] == 2) & (mae_collection["Named"] == 1) & (mae_collection["EXIT TO FLEX INITIAL"] == "Flex"), "Exit To Flex"] = "Flex"
+mae_collection.loc[(mae_collection["Flex"] == 2) & (mae_collection["Named"] == 1) & (mae_collection["EXIT TO FLEX INITIAL"] == "Named"), "Exit To Flex"] = "Named"
+mae_collection.loc[(mae_collection["Flex"] > 2) & (mae_collection["Named"] == 0) & (mae_collection["FLEX LT COLL"] == "Yes"), "Exit To Flex"] = "Flex"
+mae_collection.loc[(mae_collection["Flex"] > 2) & (mae_collection["Named"] == 0) & (mae_collection["FLEX LT COLL"] == "No"), "Exit To Flex"] = "Collection"
+mae_collection.loc[(mae_collection["Flex"] > 2) & (mae_collection["Named"] >= 1) & (mae_collection["FLEX LT COLL"] == "Yes"), "Exit To Flex"] = "Flex"
+mae_collection.loc[(mae_collection["Flex"] > 2) & (mae_collection["Named"] >= 1) & (mae_collection["FLEX LT COLL"] == "No"), "Exit To Flex"] = "Collection"
+mae_collection.loc[(mae_collection["Flex"] == 2) & (mae_collection["Named"] == 2) & (mae_collection["FLEX LT COLL"] == "Yes"), "Exit To Flex"] = "Flex"
+mae_collection.loc[(mae_collection["Flex"] == 2) & (mae_collection["Named"] == 2) & (mae_collection["COLL SRP less"] == "No"), "Exit To Flex"] = "Named"
+mae_collection.loc[(mae_collection["Flex"] == 2) & (mae_collection["Named"] == 2) & (mae_collection["COLL SRP less"] == "Yes"), "Exit To Flex"] = "Collection"
+mae_collection.loc[(mae_collection["Flex"] >= 2) & (mae_collection["Named"] >= 2) & (mae_collection["COLL SRP less"] == "Yes"), "Exit To Flex"] = "Collection"
+mae_collection.loc[(mae_collection["COLL Only Product"] == "Yes"), "Exit To Flex"] = "Collection"
+
+
+# Get the unique user names
+user_names = mae_collection["userName"].unique()
+for user_name in user_names:
+    user_df = mae_collection[mae_collection["userName"] == user_name]
+    if "Collection" in user_df["Exit To Flex"].values:
+        mae_collection.loc[user_df.index, "Exit To Flex"] = np.where(user_df["Exit To Flex"] != "Collection", "Collection", user_df["Exit To Flex"])
+
+# Create Cost Basis Column 
+mae_collection["Cost Basis"] = None
+
+# Define the conditions and assign the appropriate value to the "Cost Basis" column
+mae_collection.loc[mae_collection["Exit To Flex"] == "Flex", "Cost Basis"] = mae_collection.loc[mae_collection["Exit To Flex"] == "Flex", "Yearly Token Cost"]
+mae_collection.loc[mae_collection["Exit To Flex"] == "Named", "Cost Basis"] = mae_collection.loc[mae_collection["Exit To Flex"] == "Named", "SRP"]
+
+# Group by "userName" and sum the values in the "Cost Basis" column
+mae_collection = mae_collection.assign(Total_Cost_Basis=mae_collection.groupby("userName")["Cost Basis"].transform('sum'))
+
+# Get the cost from the collcost_df
+mae_cost = collcost_df[collcost_df['collection'] == 'MAE']['cost'].values[0]
+
+# Assign the cost to the "Cost Basis" column for the "Collection" exit
+mae_collection.loc[mae_collection["Exit To Flex"] == "Collection", "Cost Basis"] = mae_cost
+mae_collection.loc[mae_collection["Exit To Flex"] == "Collection", "Total_Cost_Basis"] = mae_cost
+
+# Create "Final Exit To" column 
+collcost_df = pd.read_excel(r'C:\Users\oviede\OneDrive - Autodesk\Documents\Python for Exits\PricelistMay24.xlsx', sheet_name='COLLCOST')
+mae_cost = collcost_df[collcost_df['collection'] == 'MAE']['cost'].values[0]
+
+mae_collection["Final Exit To Flex"] = None
+
+mae_collection.loc[mae_collection["Total_Cost_Basis"] >= mae_cost, "Final Exit To Flex"] = "Collection"
+mae_collection.loc[mae_collection["Total_Cost_Basis"] < mae_cost, "Final Exit To Flex"] = mae_collection["Exit To Flex"]
+
+
+# Group by "userName" and "productName" and check if "Named" is designated in "EXIT TO NO FLEX" for all products
+no_flex_designated_named = mae_collection.groupby(["userName", "productName"])["EXIT TO NO FLEX"].apply(lambda x: all(x == "Named")).reset_index()
+
+if not no_flex_designated_named.empty:
+    # Filter the "userName" values where "Named" is designated in "EXIT TO NO FLEX" for all products
+    user_names = no_flex_designated_named[no_flex_designated_named["EXIT TO NO FLEX"]].loc[:, "userName"].unique()
+
+    # Change all instances of "Collection" to "Named" in the "Final Exit To Flex" column for the selected user names
+    mae_collection.loc[(mae_collection["userName"].isin(user_names)) & (mae_collection["Final Exit To Flex"] == "Collection"), "Final Exit To Flex"] = "Named"
+
+
+
+# Create less redundant copies of AEC + PDM Collection tables 
+aec_coll = aec_collection.loc[:, ['userName', 'productName', 'useCount', 'Product Count', 'Max Tokens', 'Days of Use', 'SRP', 'Flex Eligible', 'Token Rate', 'Yearly Tokens', 'Yearly Token Cost', 'SRP above Flex', 'All Product SRP_x', 'All Flex SRP_x', 'COLL Only Product', 'COLL Unique Product', 'COLL SRP less', 'EXIT TO NO FLEX', 'Exit To Flex', 'Flex', 'Named', 'FLEX LT COLL', 'Total_Cost_Basis', 'Final Exit To Flex']]
+pdm_coll = pdm_collection.loc[:, ['userName', 'productName', 'useCount', 'Product Count', 'Max Tokens', 'Days of Use', 'SRP', 'Flex Eligible', 'Token Rate', 'Yearly Tokens', 'Yearly Token Cost', 'SRP above Flex', 'All Product SRP_x', 'All Flex SRP_x', 'COLL Only Product', 'COLL Unique Product', 'COLL SRP less', 'EXIT TO NO FLEX', 'Exit To Flex', 'Flex', 'Named', 'FLEX LT COLL', 'Total_Cost_Basis', 'Final Exit To Flex']]
+mae_coll = mae_collection.loc[:, ['userName', 'productName', 'useCount', 'Product Count', 'Max Tokens', 'Days of Use', 'SRP', 'Flex Eligible', 'Token Rate', 'Yearly Tokens', 'Yearly Token Cost', 'SRP above Flex', 'All Product SRP_x', 'All Flex SRP_x', 'COLL Only Product', 'COLL Unique Product', 'COLL SRP less', 'EXIT TO NO FLEX', 'Exit To Flex', 'Flex', 'Named', 'FLEX LT COLL', 'Total_Cost_Basis', 'Final Exit To Flex']]
+
+
+# Add in columns to cross check users who are in both collections 
+aec_coll['in PDM COLL'] = np.where((aec_coll['userName'].isin(pdm_coll['userName'])) & (aec_coll['productName'].isin(pdm_coll['productName'])), 'yes', 'no')
+pdm_coll['in AEC COLL'] = np.where((pdm_coll['userName'].isin(aec_coll['userName'])) & (pdm_coll['productName'].isin(aec_coll['productName'])), 'yes', 'no')
+
+
+# Create a copy of the mae_coll table and name it mae_coll_output
+mae_coll_output = mae_coll.copy()
+
+# Criteria 1: For users with "EXIT TO NO FLEX" = "Collection", keep only the first instance and change productName to "Media & Entertainment Collection"
+exit_to_no_flex_users = mae_coll_output[mae_coll_output['EXIT TO NO FLEX'] == 'Collection']['userName'].unique()
+for user in exit_to_no_flex_users:
+    indices = mae_coll_output[(mae_coll_output['userName'] == user) & (mae_coll_output['EXIT TO NO FLEX'] == 'Collection')].index
+    mae_coll_output.at[indices[0], 'productName'] = 'Media & Entertainment Collection'
+    mae_coll_output.drop(index=indices[1:], inplace=True)
+
+# Criteria 2: For users with "Final Exit To Flex" = "Collection" keep only the first instance and change productName to "Media & Entertainment Collection"
+final_exit_to_flex_users = mae_coll_output[(mae_coll_output['Final Exit To Flex'] == 'Collection')]['userName'].unique()
+for user in final_exit_to_flex_users:
+    indices = mae_coll_output[(mae_coll_output['userName'] == user) & (mae_coll_output['Final Exit To Flex'] == 'Collection')].index
+    mae_coll_output.at[indices[0], 'productName'] = 'Media & Entertainment Collection'
+    mae_coll_output.drop(index=indices[1:], inplace=True)
+
+
+# Add collection comparison table
+# First, filter the dataframes to only include rows where "Final Exit To Flex" = "Collection"
+aec_coll_filtered = aec_coll[aec_coll['Final Exit To Flex'] == 'Collection']
+pdm_coll_filtered = pdm_coll[pdm_coll['Final Exit To Flex'] == 'Collection']
+
+
+# Next, group the dataframes by "userName" and calculate the sum of "COLL Unique Product"
+aec_coll_grouped = aec_coll_filtered.groupby(['userName'])['COLL Unique Product'].first().reset_index()
+pdm_coll_grouped = pdm_coll_filtered.groupby(['userName'])['COLL Unique Product'].first().reset_index()
+
+
+# Rename the columns of the grouped dataframes
+aec_coll_grouped.columns = ['userName', 'total AEC Product']
+pdm_coll_grouped.columns = ['userName', 'total PDM Product']
+
+
+# Finally, merge the grouped dataframes together and add a new column for "total all COLL products"
+coll_comparison = pd.merge(aec_coll_grouped, pdm_coll_grouped, on='userName', how='outer')
+coll_comparison['total AEC Product'] = coll_comparison['total AEC Product'].fillna(0)
+coll_comparison['total PDM Product'] = coll_comparison['total PDM Product'].fillna(0)
+coll_comparison['total all COLL products'] = coll_comparison['total AEC Product'] + coll_comparison['total PDM Product']
+coll_comparison.sort_values(by='userName', inplace=True)
+
+
+coll_cost = pd.read_excel(r'C:\Users\oviede\OneDrive - Autodesk\Documents\Python for Exits\PricelistMay24.xlsx', sheet_name='COLLCOST')
+coll_comparison['AEC COLL Cost'] = np.where(coll_comparison['total AEC Product'] > 0, coll_cost.loc[coll_cost['collection'] == 'AEC', 'cost'].values[0], '0')
+coll_comparison['PDM COLL Cost'] = np.where(coll_comparison['total PDM Product'] > 0, coll_cost.loc[coll_cost['collection'] == 'PDM', 'cost'].values[0], '0')
+aec_coll_cost = coll_comparison['AEC COLL Cost']
+pdm_coll_cost = coll_comparison['PDM COLL Cost']
+aec_coll_cost = aec_coll_cost.apply(lambda x: x if x == 'N/A' else float(x))
+coll_comparison['AEC COLL Cost'] = aec_coll_cost
+pdm_coll_cost = pdm_coll_cost.apply(lambda x: x if x == 'N/A' else float(x))
+coll_comparison['PDM COLL Cost'] = pdm_coll_cost
+
+aec_coll_filtered = aec_coll[aec_coll['in PDM COLL'] == 'no']
+aec_coll_grouped = aec_coll_filtered.groupby(['userName'])['SRP'].sum().reset_index()
+aec_coll_grouped.columns = ['userName', 'Cost Additional AEC products']
+pdm_coll_filtered = pdm_coll[pdm_coll['in AEC COLL'] == 'no']
+pdm_coll_grouped = pdm_coll_filtered.groupby(['userName'])['SRP'].sum().reset_index()
+pdm_coll_grouped.columns = ['userName', 'Cost Additional PDM products']
+coll_comparison = pd.merge(coll_comparison, aec_coll_grouped, on='userName', how='left').fillna(0)
+coll_comparison = pd.merge(coll_comparison, pdm_coll_grouped, on='userName', how='left').fillna(0)
+
+
+coll_comparison['Cost AEC and additional PDM product'] = np.where(coll_comparison['total AEC Product'] > 0, coll_comparison['AEC COLL Cost'] + coll_comparison['Cost Additional PDM products'], 0)
+coll_comparison['Cost PDM and additional AEC product'] = np.where(coll_comparison['total PDM Product'] > 0, coll_comparison['PDM COLL Cost'] + coll_comparison['Cost Additional AEC products'], 0)
+
+coll_comparison['Optimized Exit To'] = "N/A"
+
+# First condition
+condition1 = (coll_comparison['total AEC Product'] == coll_comparison['total PDM Product']) & (coll_comparison['Cost Additional AEC products'] == 0) & (coll_comparison['Cost Additional PDM products'] == 0)
+coll_comparison['Optimized Exit To'] = np.where(condition1 & (coll_comparison['Cost AEC and additional PDM product'] < coll_comparison['Cost PDM and additional AEC product']), 'AEC', coll_comparison['Optimized Exit To'])
+coll_comparison['Optimized Exit To'] = np.where(condition1 & (coll_comparison['Cost AEC and additional PDM product'] > coll_comparison['Cost PDM and additional AEC product']), 'PDM', coll_comparison['Optimized Exit To'])
+
+# Second condition
+condition2 = (coll_comparison['Cost Additional AEC products'] >= 0) | (coll_comparison['Cost Additional PDM products'] >= 0)
+coll_comparison['Optimized Exit To'] = np.where(condition2 & (coll_comparison['Cost AEC and additional PDM product'] > coll_comparison['Cost PDM and additional AEC product']), 'PDM', coll_comparison['Optimized Exit To'])
+coll_comparison['Optimized Exit To'] = np.where(condition2 & (coll_comparison['Cost AEC and additional PDM product'] < coll_comparison['Cost PDM and additional AEC product']), 'AEC', coll_comparison['Optimized Exit To'])
+
+# Third condition
+condition3 = (coll_comparison['total AEC Product'] == 0)
+coll_comparison['Optimized Exit To'] = np.where(condition3, 'PDM', coll_comparison['Optimized Exit To'])
+condition3 = (coll_comparison['total PDM Product'] == 0)
+coll_comparison['Optimized Exit To'] = np.where(condition3, 'AEC', coll_comparison['Optimized Exit To'])
+
+
+
+# First, filter the dataframes to only include rows where "EXIT TO NO FLEX" = "Collection"
+aec_coll_filtered = aec_coll[aec_coll['EXIT TO NO FLEX'] == 'Collection']
+pdm_coll_filtered = pdm_coll[pdm_coll['EXIT TO NO FLEX'] == 'Collection']
+
+# Next, group the dataframes by "userName" and calculate the sum of "COLL Unique Product"
+aec_coll_grouped = aec_coll_filtered.groupby(['userName'])['COLL Unique Product'].first().reset_index()
+pdm_coll_grouped = pdm_coll_filtered.groupby(['userName'])['COLL Unique Product'].first().reset_index()
+
+# Rename the columns of the grouped dataframes
+aec_coll_grouped.columns = ['userName', 'total AEC Product']
+pdm_coll_grouped.columns = ['userName', 'total PDM Product']
+
+
+# Finally, merge the grouped dataframes together and add a new column for "total all COLL products"
+coll_comparison_nu = pd.merge(aec_coll_grouped, pdm_coll_grouped, on='userName', how='outer')
+coll_comparison_nu['total AEC Product'] = coll_comparison_nu['total AEC Product'].fillna(0)
+coll_comparison_nu['total PDM Product'] = coll_comparison_nu['total PDM Product'].fillna(0)
+coll_comparison_nu['total all COLL products'] = coll_comparison_nu['total AEC Product'] + coll_comparison_nu['total PDM Product']
+coll_comparison_nu.sort_values(by='userName', inplace=True)
+
+
+coll_cost = pd.read_excel(r'C:\Users\oviede\OneDrive - Autodesk\Documents\Python for Exits\PricelistMay24.xlsx', sheet_name='COLLCOST')
+coll_comparison_nu['AEC COLL Cost'] = np.where(coll_comparison_nu['total AEC Product'] > 0, coll_cost.loc[coll_cost['collection'] == 'AEC', 'cost'].values[0], '0')
+coll_comparison_nu['PDM COLL Cost'] = np.where(coll_comparison_nu['total PDM Product'] > 0, coll_cost.loc[coll_cost['collection'] == 'PDM', 'cost'].values[0], '0')
+aec_coll_cost = coll_comparison_nu['AEC COLL Cost']
+pdm_coll_cost = coll_comparison_nu['PDM COLL Cost']
+aec_coll_cost = aec_coll_cost.apply(lambda x: x if x == 'N/A' else float(x))
+coll_comparison_nu['AEC COLL Cost'] = aec_coll_cost
+pdm_coll_cost = pdm_coll_cost.apply(lambda x: x if x == 'N/A' else float(x))
+coll_comparison_nu['PDM COLL Cost'] = pdm_coll_cost
+
+aec_coll_filtered = aec_coll[aec_coll['in PDM COLL'] == 'no']
+aec_coll_grouped = aec_coll_filtered.groupby(['userName'])['SRP'].sum().reset_index()
+aec_coll_grouped.columns = ['userName', 'Cost Additional AEC products']
+pdm_coll_filtered = pdm_coll[pdm_coll['in AEC COLL'] == 'no']
+pdm_coll_grouped = pdm_coll_filtered.groupby(['userName'])['SRP'].sum().reset_index()
+pdm_coll_grouped.columns = ['userName', 'Cost Additional PDM products']
+coll_comparison_nu = pd.merge(coll_comparison_nu, aec_coll_grouped, on='userName', how='left').fillna(0)
+coll_comparison_nu = pd.merge(coll_comparison_nu, pdm_coll_grouped, on='userName', how='left').fillna(0)
+
+
+coll_comparison_nu['Cost AEC and additional PDM product'] = np.where(coll_comparison_nu['total AEC Product'] > 0, coll_comparison_nu['AEC COLL Cost'] + coll_comparison_nu['Cost Additional PDM products'], 0)
+coll_comparison_nu['Cost PDM and additional AEC product'] = np.where(coll_comparison_nu['total PDM Product'] > 0, coll_comparison_nu['PDM COLL Cost'] + coll_comparison_nu['Cost Additional AEC products'], 0)
+
+coll_comparison_nu['Optimized Exit To'] = "N/A"
+
+# First condition
+condition1 = (coll_comparison_nu['total AEC Product'] == coll_comparison_nu['total PDM Product']) & (coll_comparison_nu['Cost Additional AEC products'] == 0) & (coll_comparison_nu['Cost Additional PDM products'] == 0)
+coll_comparison_nu['Optimized Exit To'] = np.where(condition1 & (coll_comparison_nu['Cost AEC and additional PDM product'] < coll_comparison_nu['Cost PDM and additional AEC product']), 'AEC', coll_comparison_nu['Optimized Exit To'])
+coll_comparison_nu['Optimized Exit To'] = np.where(condition1 & (coll_comparison_nu['Cost AEC and additional PDM product'] > coll_comparison_nu['Cost PDM and additional AEC product']), 'PDM', coll_comparison_nu['Optimized Exit To'])
+
+# Second condition
+condition2 = (coll_comparison_nu['Cost Additional AEC products'] >= 0) | (coll_comparison_nu['Cost Additional PDM products'] >= 0)
+coll_comparison_nu['Optimized Exit To'] = np.where(condition2 & (coll_comparison_nu['Cost PDM and additional AEC product'] > coll_comparison_nu['Cost AEC and additional PDM product']), 'AEC', coll_comparison_nu['Optimized Exit To'])
+coll_comparison_nu['Optimized Exit To'] = np.where(condition2 & (coll_comparison_nu['Cost PDM and additional AEC product'] < coll_comparison_nu['Cost AEC and additional PDM product']), 'PDM', coll_comparison_nu['Optimized Exit To'])
+
+# Third condition
+condition3 = (coll_comparison_nu['total AEC Product'] == 0)
+coll_comparison_nu['Optimized Exit To'] = np.where(condition3, 'PDM', coll_comparison_nu['Optimized Exit To'])
+condition3 = (coll_comparison_nu['total PDM Product'] == 0)
+coll_comparison_nu['Optimized Exit To'] = np.where(condition3, 'AEC', coll_comparison_nu['Optimized Exit To'])
+
+
+
+
+coll_comparison['productName'] = np.where(coll_comparison['Optimized Exit To'] == 'AEC', 
+                                           'Architecture Engineering & Construction Collection', 
+                                           'Product Design & Manufacturing Collection')
+coll_comparison_nu['productName'] = np.where(coll_comparison_nu['Optimized Exit To'] == 'AEC', 
+                                           'Architecture Engineering & Construction Collection', 
+                                           'Product Design & Manufacturing Collection')
+
+
+
+# Create leftover dataset 
+leftover_flex = pd.concat([aec_collection[(aec_collection['Final Exit To Flex'] == 'Named') | (aec_collection['Final Exit To Flex'] == 'Flex')], 
+                     pdm_collection[(pdm_collection['Final Exit To Flex'] == 'Named') | (pdm_collection['Final Exit To Flex'] == 'Flex')]])
+leftover_flex.drop_duplicates(subset=["userName", "productName"], keep='first', inplace=True)
+
+
+
+
+#create final flex output table
+
+single_product_users['Final Flex Summary'] = single_product_users['Exit To']
+MUPRODUCTS_No_Coll['Final Flex Summary'] = MUPRODUCTS_No_Coll['Exit To']
+mae_coll['Final Flex Summary'] = mae_coll_output['Final Exit To Flex']
+leftover_flex['Final Flex Summary'] = leftover_flex['Final Exit To Flex']
+coll_comparison['Final Flex Summary'] = coll_comparison['productName']
+
+# Filter and clean the data in "mae_coll"
+mae_coll_clean = mae_coll[(mae_coll['Final Exit To Flex'].str.contains('Collection', na=False)) & (~mae_coll['Final Exit To Flex'].str.contains('named', case=False)) & (~mae_coll['Final Exit To Flex'].str.contains('Flex', case=False))].copy()
+mae_coll_clean.drop_duplicates(subset=['userName'], inplace=True)
+mae_coll_clean['productName'] = 'Media & Entertainment Collection'
+mae_coll_clean['Final Flex Summary'] = mae_coll_clean['Final Exit To Flex']
+mae_coll_clean.drop_duplicates(subset=['userName'], keep=False, inplace=True)
+
+# Filter and clean the data in "mae_coll"
+mae_coll_clean_flex_named = mae_coll[(mae_coll['Final Exit To Flex'].str.contains('named', case=False) | mae_coll['Final Exit To Flex'].str.contains('Flex', case=False))].copy()
+mae_coll_clean_flex_named['Final Flex Summary'] = mae_coll_clean_flex_named['Final Exit To Flex']
+
+# Concatenate all the DataFrames and remove duplicates
+final_output_flex = pd.concat([coll_comparison[['userName', 'productName', 'Final Flex Summary']].fillna(0),
+                               single_product_users[['userName', 'productName','Final Flex Summary', 'Yearly Tokens']],
+                               MUPRODUCTS_No_Coll[['userName', 'productName', 'Final Flex Summary', 'Yearly Tokens']],
+                               mae_coll_clean[['userName', 'productName', 'Final Flex Summary', 'Yearly Tokens']],
+                               mae_coll_clean_flex_named[['userName', 'productName', 'Final Flex Summary', 'Yearly Tokens']],
+                               leftover_flex[['userName', 'productName', 'Final Flex Summary', 'Yearly Tokens']]])
+
+# Filling in NaN values in "Yearly Tokens" with 0
+final_output_flex['Yearly Tokens'].fillna(0, inplace=True)
+
+# Cleaning up the final output DataFrame
+final_output_flex['Final Flex Summary'].replace(['Architecture Engineering & Construction Collection', 'Product Design & Manufacturing Collection'], 'Named', inplace=True)
+final_output_flex['Final Flex Summary'].replace(['Collection'], 'Named', inplace=True)
+
+
+
+# Create leftover dataset 
+leftover_nu = leftover_flex = pd.concat([aec_collection[(aec_collection['EXIT TO NO FLEX'] == 'Named') | (aec_collection['EXIT TO NO FLEX'] == 'Flex')], 
+                     pdm_collection[(pdm_collection['EXIT TO NO FLEX'] == 'Named') | (pdm_collection['EXIT TO NO FLEX'] == 'Flex')]])
+leftover_nu.drop_duplicates(subset=["userName", "productName"], keep='first', inplace=True)
+
+
+# Check for users who have "Product Design & Manufacturing Collection"
+pdm_coll_users = final_output_flex[(final_output_flex['productName'] == "Product Design & Manufacturing Collection")]['userName'].unique()
+
+# If users have "Product Design & Manufacturing Collection", check if there are any other products in the PDMCOLL tab
+if len(pdm_coll_users) > 0:
+    pdm_coll_products = pd.read_excel(r'C:\Users\oviede\OneDrive - Autodesk\Documents\Python for Exits\PricelistMay24.xlsx', sheet_name='PDMCOLL')['productName'].unique()
+    for user in pdm_coll_users:
+        user_products = final_output_flex[(final_output_flex['userName'] == user)]['productName'].unique()
+        if len(user_products) > 1:
+            for product in user_products:
+                if product in pdm_coll_products:
+                    final_output_flex = final_output_flex[~((final_output_flex['userName'] == user) & (final_output_flex['productName'] == product))]
+
+# Check for users who have "Architecture Engineering & Construction Collection
+aec_coll_users = final_output_flex[(final_output_flex['productName'] == "Architecture Engineering & Construction Collection")]['userName'].unique()
+
+# If users have "Architecture Engineering & Construction Collection", check if there are any other products in the AECCOLL tab
+if len(aec_coll_users) > 0:
+    aec_coll_products = pd.read_excel(r'C:\Users\oviede\OneDrive - Autodesk\Documents\Python for Exits\PricelistMay24.xlsx', sheet_name='AECCOLL')['productName'].unique()
+    for user in aec_coll_users:
+        user_products = final_output_flex[(final_output_flex['userName'] == user)]['productName'].unique()
+        if len(user_products) > 1:
+            for product in user_products:
+                if product in aec_coll_products:
+                    final_output_flex = final_output_flex[~((final_output_flex['userName'] == user) & (final_output_flex['productName'] == product))]
+
+# Check for users who have "Media & Entertainment Collection"
+mae_coll_users = final_output_flex[(final_output_flex['productName'] == "Media & Entertainment Collection")]['userName'].unique()
+
+# If users have "Media & Entertainment Collection", check if there are any other products in the MAECOLL tab
+if len(mae_coll_users) > 0:
+    mae_coll_products = pd.read_excel(r'C:\Users\oviede\OneDrive - Autodesk\Documents\Python for Exits\PricelistMay24.xlsx', sheet_name='MAECOLL')['productName'].unique()
+    for user in mae_coll_users:
+        user_products = final_output_flex[(final_output_flex['userName'] == user)]['productName'].unique()
+        if len(user_products) > 1:
+            for product in user_products:
+                if product in mae_coll_products:
+                    final_output_flex = final_output_flex[~((final_output_flex['userName'] == user) & (final_output_flex['productName'] == product))]
+                    
+#create final nu output table
+
+single_product_users['Final NU Summary'] = single_product_users['Exit To']
+MUPRODUCTS_No_Coll['Final NU Summary'] = MUPRODUCTS_No_Coll['Exit To']
+mae_coll_output['Final NU Summary'] = mae_coll_output['Final Exit To Flex']
+leftover_nu['Final NU Summary'] = leftover_nu['EXIT TO NO FLEX']
+coll_comparison_nu['Final NU Summary'] = coll_comparison_nu['productName']
+
+final_output_nu = pd.concat([coll_comparison_nu[['userName', 'productName', 'Final NU Summary']].fillna(0),
+                               single_product_users[['userName', 'productName','Final NU Summary', 'Yearly Tokens']],
+                             MUPRODUCTS_No_Coll[['userName', 'productName', 'Final NU Summary', 'Yearly Tokens']],
+                               mae_coll_output[['userName', 'productName', 'Final NU Summary', 'Yearly Tokens']],
+                               leftover_nu[['userName', 'productName', 'Final NU Summary', 'Yearly Tokens']]])
+
+#filling in NaN values in "Yearly Tokens" with 0
+final_output_nu['Yearly Tokens'].fillna(0, inplace=True)
+final_output_nu['Final NU Summary'].replace(["Architecture Engineering & Construction Collection", "Product Design & Manufacturing Collection", "Media & Entertainment Collection"], "Collection", inplace=True)
+final_output_nu['Final NU Summary'].replace(["Flex"], "Named", inplace=True)
+
+final_output_nu['productName'].replace(["Structural Bridge Design", "Robot Structural Analysis Professional", "Vehicle Tracking", "Insight"], "Architecture Engineering & Construction Collection", inplace=True)
+final_output_nu['productName'].replace(["Factory Design Utilities", "Inventor CAM", "Inventor Nesting", "Inventor Tolerance Analysis", "Inventor Nastran", "Inventor CAM - Ultimate"], "Product Design & Manufacturing Collection", inplace=True)
+
+
+
+# Check for users who have "Product Design & Manufacturing Collection"
+pdm_coll_users = final_output_nu[(final_output_nu['productName'] == "Product Design & Manufacturing Collection")]['userName'].unique()
+
+# If users have "Product Design & Manufacturing Collection", check if there are any other products in the PDMCOLL tab
+if len(pdm_coll_users) > 0:
+    pdm_coll_products = pd.read_excel(r'C:\Users\oviede\OneDrive - Autodesk\Documents\Python for Exits\PricelistMay24.xlsx', sheet_name='PDMCOLL')['productName'].unique()
+    for user in pdm_coll_users:
+        user_products = final_output_nu[(final_output_nu['userName'] == user)]['productName'].unique()
+        if len(user_products) > 1:
+            for product in user_products:
+                if product in pdm_coll_products:
+                    final_output_nu = final_output_nu[~((final_output_nu['userName'] == user) & (final_output_nu['productName'] == product))]
+
+# Check for users who have "Architecture Engineering & Construction Collection"
+aec_coll_users = final_output_nu[(final_output_nu['productName'] == "Architecture Engineering & Construction Collection")]['userName'].unique()
+
+# If users have "Architecture Engineering & Construction Collection", check if there are any other products in the AECCOLL tab
+if len(aec_coll_users) > 0:
+    aec_coll_products = pd.read_excel(r'C:\Users\oviede\OneDrive - Autodesk\Documents\Python for Exits\PricelistMay24.xlsx', sheet_name='AECCOLL')['productName'].unique()
+    for user in aec_coll_users:
+        user_products = final_output_nu[(final_output_nu['userName'] == user)]['productName'].unique()
+        if len(user_products) > 1:
+            for product in user_products:
+                if product in aec_coll_products:
+                    final_output_nu = final_output_nu[~((final_output_nu['userName'] == user) & (final_output_nu['productName'] == product))]
+
+
+# Check for users who have "Media & Entertainment Collection"
+mae_coll_users = final_output_nu[(final_output_nu['productName'] == "Media & Entertainment Collection")]['userName'].unique()
+
+# If users have "Media & Entertainment Collection", check if there are any other products in the MAECOLL tab
+if len(mae_coll_users) > 0:
+    mae_coll_products = pd.read_excel(r'C:\Users\oviede\OneDrive - Autodesk\Documents\Python for Exits\PricelistMay24.xlsx', sheet_name='MAECOLL')['productName'].unique()
+    for user in mae_coll_users:
+        user_products = final_output_nu[(final_output_nu['userName'] == user)]['productName'].unique()
+        if len(user_products) > 1:
+            for product in user_products:
+                if product in mae_coll_products:
+                    final_output_nu = final_output_nu[~((final_output_nu['userName'] == user) & (final_output_nu['productName'] == product))]
+
+
+
+
+# Write the tables to excel file
+with pd.ExcelWriter(r'C:\Users\oviede\OneDrive - Autodesk\Documents\Python for Exits\MASTEROUTPUT2.xlsx') as writer:
+    final_output_flex.to_excel(writer, sheet_name='Final Flex Summary')
+    final_output_nu.to_excel(writer, sheet_name='Final NU Summary')
+    user_summary.to_excel(writer, sheet_name='User Summary')
+    user_summary_original.to_excel(writer, sheet_name='User Summary Original')
+    single_product_users.to_excel(writer, sheet_name='Single Product Users')
+    multi_product_users.to_excel(writer, sheet_name='Multi Product Users')
+    aec_collection.to_excel(writer, sheet_name='AEC Collection')
+    pdm_collection.to_excel(writer, sheet_name='PDM Collection')
+    MUPRODUCTS_No_Coll.to_excel(writer, sheet_name='MU NO COLL')
+    pdm_flex.to_excel(writer, sheet_name='PDM Flex')
+    aec_coll.to_excel(writer, sheet_name='AEC COLL')
+    pdm_coll.to_excel(writer, sheet_name='PDM COLL')
+    mae_coll.to_excel(writer, sheet_name='MAE COLL')
+    coll_comparison.to_excel(writer, sheet_name='COLL Comparison Flex')
+    coll_comparison_nu.to_excel(writer, sheet_name='COLL Comparison NU')
+    leftover_flex.to_excel(writer, sheet_name='Leftover Flex')
+    
+    
+workbook = openpyxl.load_workbook(r'C:\Users\oviede\OneDrive - Autodesk\Documents\Python for Exits\MASTEROUTPUT2.xlsx')
+
+# Iterate through all sheets
+for sheet in workbook:
+    # Change the font to Calibri with size 9
+    for row in sheet.iter_rows():
+        for cell in row:
+            cell.font = openpyxl.styles.Font(name='Calibri', size=9)
+    # Set the wrap text and center align properties for all header rows
+    for row in sheet.iter_rows(min_row=1, max_row=1):
+        for cell in row:
+            cell.alignment = openpyxl.styles.Alignment(wrap_text=True, horizontal='center', vertical='center')
+workbook.save(r'C:\Users\oviede\OneDrive - Autodesk\Documents\Python for Exits\MASTEROUTPUT2.xlsx')
+
+import openpyxl as px
+
+wb= px.load_workbook(r'C:\Users\oviede\OneDrive - Autodesk\Documents\Python for Exits\MASTEROUTPUT2.xlsx')
+# Iterate over all sheets in the workbook
+for sheet in wb:
+    # Apply the filter to the top row of the sheet
+    sheet.auto_filter.ref = sheet.dimensions
+
+wb.get_sheet_by_name("AEC Collection").sheet_state = 'hidden'
+wb.get_sheet_by_name("PDM Collection").sheet_state = 'hidden'
+wb.get_sheet_by_name("PDM Flex").sheet_state = 'hidden'
+sheet = wb["Final Flex Summary"]
+sheet.sheet_view.showGridLines = False
+sheet = wb["Final NU Summary"] 
+sheet.sheet_view.showGridLines = False
+
+from openpyxl.styles import PatternFill
+
+# Get the "Final Flex Summary" tab
+sheet = wb['Final Flex Summary']
+green_fill = PatternFill(start_color='A9C7AC', end_color='A9C7AC', fill_type='solid')
+sheet.sheet_properties.tabColor = green_fill.start_color
+
+sheet = wb['Final NU Summary']
+green_fill = PatternFill(start_color='A9C7AC', end_color='A9C7AC', fill_type='solid')
+sheet.sheet_properties.tabColor = green_fill.start_color
+
+# Save the changes
+wb.save(r'C:\Users\oviede\OneDrive - Autodesk\Documents\Python for Exits\MASTEROUTPUT.xlsx')
+
+
